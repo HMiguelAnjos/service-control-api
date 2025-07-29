@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model client {
+  id         Int       @id @default(autoincrement()) @map("id")
+  name       String    @map("name")
+  phone      String?   @map("phone")
+  email      String?   @map("email")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  services   service[]
+
+  @@map("client")
+}
+
+model procedure_type {
+  id          Int       @id @default(autoincrement()) @map("id")
+  name        String    @map("name")
+  description String?   @map("description")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  services    service[]
+
+  @@map("procedure_type")
+}
+
+model service {
+  id             Int             @id @default(autoincrement()) @map("id")
+  clientId       Int             @map("client_id")
+  procedureId    Int             @map("procedure_id")
+  description    String?         @map("description")
+  price          Decimal         @map("price")
+  date           DateTime        @default(now()) @map("date")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  deletedAt      DateTime?       @map("deleted_at")
+
+  client         client          @relation(fields: [clientId], references: [id])
+  procedure_type procedure_type  @relation(fields: [procedureId], references: [id])
+
+  expenses       expense[]
+  productsUsed   service_product[]
+  profit         profit?
+
+  @@map("service")
+}
+
+model expense {
+  id         Int       @id @default(autoincrement()) @map("id")
+  serviceId  Int       @map("service_id")
+  category   String    @map("category")
+  amount     Decimal   @map("amount")
+  notes      String?   @map("notes")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  service    service   @relation(fields: [serviceId], references: [id])
+
+  @@map("expense")
+}
+
+model product {
+  id          Int       @id @default(autoincrement()) @map("id")
+  name        String    @map("name")
+  description String?   @map("description")
+  unitCost    Decimal   @map("unit_cost")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  inventory   inventory?
+  usedIn      service_product[]
+
+  @@map("product")
+}
+
+model inventory {
+  id         Int       @id @default(autoincrement()) @map("id")
+  productId  Int       @unique @map("product_id")
+  quantity   Int       @map("quantity")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  product    product   @relation(fields: [productId], references: [id])
+
+  @@map("inventory")
+}
+
+model service_product {
+  id         Int       @id @default(autoincrement()) @map("id")
+  serviceId  Int       @map("service_id")
+  productId  Int       @map("product_id")
+  quantity   Int       @map("quantity")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  service    service   @relation(fields: [serviceId], references: [id])
+  product    product   @relation(fields: [productId], references: [id])
+
+  @@map("service_product")
+}
+
+model profit {
+  id          Int       @id @default(autoincrement()) @map("id")
+  serviceId   Int       @unique @map("service_id")
+  totalProfit Decimal   @map("total_profit")
+  marginPct   Decimal   @map("margin_pct")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  service     service   @relation(fields: [serviceId], references: [id])
+
+  @@map("profit")
+}

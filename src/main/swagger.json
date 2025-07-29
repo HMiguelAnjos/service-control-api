@@ -1,0 +1,45 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Expense Tracker API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/expenses": {
+      "get": {
+        "summary": "List all expenses",
+        "responses": {
+          "200": {
+            "description": "A list of expenses"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new expense",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "amount": { "type": "number" },
+                  "category": { "type": "string" }
+                },
+                "required": ["title", "amount", "category"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Expense created"
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        }
+      }
+    }
+  }
+}

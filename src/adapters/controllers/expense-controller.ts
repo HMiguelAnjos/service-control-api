@@ -44,7 +44,7 @@ export class ExpenseController {
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      await this.deleteUseCase.execute(id);
+      await this.deleteUseCase.execute(Number(req.params.id));
       return res.status(204).send();
     } catch (error: any) {
       next(error);

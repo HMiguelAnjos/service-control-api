@@ -2,10 +2,10 @@ import { Router } from 'express';
 import { ExpenseController } from '../adapters/controllers/expense-controller';
 
 import { PrismaExpenseRepository } from '../infrastructure/db/prisma-expense-repository';
-import { CreateExpenseUseCase } from '../application/use-cases/create-expense-use-case';
-import { ListExpensesUseCase } from '../application/use-cases/list-expenses-use-case';
-import { UpdateExpenseUseCase } from '../application/use-cases/update-expense-use-case';
-import { DeleteExpenseUseCase } from '../application/use-cases/delete-expense-use-case';
+import { CreateExpenseUseCase } from '../application/use-cases/expense/create-expense-use-case';
+import { DeleteExpenseUseCase } from '../application/use-cases/expense/delete-expense-use-case';
+import { ListExpensesUseCase } from '../application/use-cases/expense/list-expenses-use-case';
+import { UpdateExpenseUseCase } from '../application/use-cases/expense/update-expense-use-case';
 
 const router = Router();
 

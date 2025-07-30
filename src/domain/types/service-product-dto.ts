@@ -1,6 +1,6 @@
 export type ServiceProductDTO = {
-  id: number;
-  serviceId: number;
-  productId: number;
+  id: number | undefined,
+  serviceId: number,
+  productId: number,
   quantity: number;
 };

@@ -1,5 +1,5 @@
 export type InventoryDTO = {
-  id: number;
-  productId: number;
+  id: number | undefined,
+  productId: number,
   quantity: number;
 };

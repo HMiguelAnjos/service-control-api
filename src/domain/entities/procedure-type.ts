@@ -1,6 +1,6 @@
 export class ProcedureType {
   constructor(
-    public readonly id: number,
+    public readonly id: number | undefined,
     public readonly name: string,
     public readonly description?: string,
     public readonly createdAt: Date = new Date(),

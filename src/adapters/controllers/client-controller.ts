@@ -42,7 +42,7 @@ export class ClientController {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await this.deleteUseCase.execute(req.params.id);
+      await this.deleteUseCase.execute(Number(req.params.id));
       return res.status(204).send();
     } catch (error: any) {
       next(error);

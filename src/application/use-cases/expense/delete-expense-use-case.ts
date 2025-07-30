@@ -3,7 +3,7 @@ import { IExpenseRepository } from '../../../domain/repositories/iexpense-reposi
 export class DeleteExpenseUseCase {
   constructor(private repo: IExpenseRepository) {}
 
-  async execute(id: string) {
+  async execute(id: number) {
     await this.repo.delete(id);
   }
 }

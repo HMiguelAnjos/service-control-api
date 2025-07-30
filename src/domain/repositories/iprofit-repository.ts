@@ -4,5 +4,5 @@ export interface IProfitRepository {
   create(profit: Profit): Promise<void>;
   findAll(): Promise<Profit[]>;
   update(profit: Profit): Promise<void>;
-  delete(id: string): Promise<void>;
+  delete(id: number): Promise<void>;
 }

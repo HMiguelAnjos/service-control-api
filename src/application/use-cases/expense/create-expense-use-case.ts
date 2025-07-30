@@ -6,13 +6,13 @@ export class CreateExpenseUseCase {
   constructor(private repo: IExpenseRepository) {}
 
   async execute(input: {
-    serviceId: string;
+    serviceId: number;
     category: string;
     amount: number;
     notes?: string;
   }) {
     const entity = new Expense(
-      randomUUID(),
+      undefined,
       input.serviceId,
       input.category,
       input.amount,

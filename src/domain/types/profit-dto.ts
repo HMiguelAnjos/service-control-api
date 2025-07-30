@@ -1,6 +1,6 @@
 export type ProfitDTO = {
-  id: number;
-  serviceId: number;
+  id: number | undefined,
+  serviceId: number,
   totalProfit: number;
   marginPct: number;
 };

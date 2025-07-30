@@ -6,13 +6,13 @@ export class UpdateExpenseUseCase {
 
   async execute(input: {
     id: string;
-    serviceId: string;
+    serviceId: number;
     category: string;
     amount: number;
     notes?: string;
   }) {
     const entity = new Expense(
-      input.id,
+      undefined,
       input.serviceId,
       input.category,
       input.amount,

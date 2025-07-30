@@ -3,7 +3,7 @@ import { IInventoryRepository } from '../../domain/repositories/iinventory-repos
 export class DeleteInventoryUseCase {
   constructor(private repo: IInventoryRepository) {}
 
-  async execute(id: string) {
+  async execute(id: number) {
     await this.repo.delete(id);
   }
 }

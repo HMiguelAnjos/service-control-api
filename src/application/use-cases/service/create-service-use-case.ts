@@ -1,12 +1,24 @@
-import { IServiceRepository } from '../../domain/repositories/iservice-repository';
 import { Service } from '../../../domain/entities/service';
-import { randomUUID } from 'crypto';
+import { IServiceRepository } from '../../../domain/repositories/iservice-repository';
 
 export class CreateServiceUseCase {
   constructor(private repo: IServiceRepository) {}
 
-  async execute(input: { clientId: string; procedureId: string; description: string; price: number; date?: Date }) {
-    const entity = new Service(randomUUID(), input.clientId, input.procedureId, input.description, input.price, input.date ?? new Date());
+  async execute(input: {
+    clientId: number;
+    procedureId: number;
+    price: number;
+    date?: Date;
+    description: string;
+  }) {
+    const entity = new Service(
+      undefined,
+      input.clientId,
+      input.procedureId,
+      input.price,
+      input.date ?? new Date(),
+      input.description,
+    );
     if (!entity.isValid()) {
       throw new Error('Invalid service data');
     }

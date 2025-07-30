@@ -4,5 +4,5 @@ export interface IProcedureTypeRepository {
   create(proceduretype: ProcedureType): Promise<void>;
   findAll(): Promise<ProcedureType[]>;
   update(proceduretype: ProcedureType): Promise<void>;
-  delete(id: string): Promise<void>;
+  delete(id: number): Promise<void>;
 }

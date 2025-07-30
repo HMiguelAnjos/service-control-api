@@ -1,6 +1,6 @@
 export type ProductDTO = {
-  id: number;
+  id: number | undefined,
   name: string;
-  description?: string;
+  description?: string | null;
   unitCost: number;
 };

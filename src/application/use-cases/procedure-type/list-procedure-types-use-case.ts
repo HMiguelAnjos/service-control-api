@@ -1,5 +1,6 @@
-import { ProcedureTypeDTO } from '../../../../dtos/procedure-type-dto';
+
 import { IProcedureTypeRepository } from '../../../domain/repositories/iprocedure-type-repository';
+import { ProcedureTypeDTO } from '../../../domain/types/procedure-type-dto';
 
 export class ListProcedureTypesUseCase {
   constructor(private repo: IProcedureTypeRepository) {}

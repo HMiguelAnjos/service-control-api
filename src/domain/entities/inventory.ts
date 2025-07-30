@@ -1,7 +1,7 @@
 export class Inventory {
   constructor(
-    public readonly id: number,
-    public readonly productId: string,
+    public readonly id: number | undefined,
+    public readonly productId: number,
     public readonly quantity: number,
     public readonly createdAt: Date = new Date(),
     public readonly updatedAt: Date = new Date(),
@@ -9,6 +9,6 @@ export class Inventory {
   ) {}
 
   isValid(): boolean {
-    return this.productId.length > 0 && this.quantity >= 0;
+    return this.productId > 0 && this.quantity >= 0;
   }
 }

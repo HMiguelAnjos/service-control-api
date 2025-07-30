@@ -1,7 +1,7 @@
 export type ExpenseDTO = {
-  id: number;
-  serviceId: number;
+  id: number | undefined,
+  serviceId: number,
   category: string;
   amount: number;
-  notes?: string;
+  notes?: string | null;
 };

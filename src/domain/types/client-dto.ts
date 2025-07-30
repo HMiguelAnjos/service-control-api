@@ -1,6 +1,6 @@
 export type ClientDTO = {
-  id: number;
+  id: number | undefined,
   name: string;
-  phone?: string;
-  email?: string;
+  phone?: string | null;
+  email?: string | null;
 };

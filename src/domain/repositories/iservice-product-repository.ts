@@ -4,5 +4,5 @@ export interface IServiceProductRepository {
   create(serviceproduct: ServiceProduct): Promise<void>;
   findAll(): Promise<ServiceProduct[]>;
   update(serviceproduct: ServiceProduct): Promise<void>;
-  delete(id: string): Promise<void>;
+  delete(id: number): Promise<void>;
 }

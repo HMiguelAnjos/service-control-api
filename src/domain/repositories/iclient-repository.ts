@@ -4,5 +4,5 @@ export interface IClientRepository {
   create(client: Client): Promise<void>;
   findAll(): Promise<Client[]>;
   update(client: Client): Promise<void>;
-  delete(id: string): Promise<void>;
+  delete(id: number): Promise<void>;
 }

@@ -15,9 +15,11 @@ export class PrismaProcedureTypeRepository implements IProcedureTypeRepository {
   }
 
   async findAll(): Promise<ProcedureType[]> {
-    const rawProcedureTypes = await prisma.procedure_type.findMany();
+    const rawProcedureTypes = await prisma.procedure_type.findMany({
+      where: { deletedAt: null },
+    });
     return rawProcedureTypes.map(
-      (p) =>
+      (p: any) =>
         new ProcedureType(
           p.id,
           p.name,

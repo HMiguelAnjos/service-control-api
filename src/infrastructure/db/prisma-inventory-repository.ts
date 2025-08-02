@@ -15,9 +15,11 @@ export class PrismaInventoryRepository implements IInventoryRepository {
   }
 
   async findAll(): Promise<Inventory[]> {
-    const rawInventories = await prisma.inventory.findMany();
+    const rawInventories = await prisma.inventory.findMany({
+      where: { deletedAt: null },
+    });
     return rawInventories.map(
-      (i) =>
+      (i: any) =>
         new Inventory(
           i.id,
           i.productId,

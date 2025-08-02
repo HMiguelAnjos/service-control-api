@@ -16,9 +16,11 @@ export class PrismaProfitRepository implements IProfitRepository {
   }
 
   async findAll(): Promise<Profit[]> {
-    const rawProfits = await prisma.profit.findMany();
+    const rawProfits = await prisma.profit.findMany({
+      where: { deletedAt: null },
+    });
     return rawProfits.map(
-      (p) =>
+      (p: any) =>
         new Profit(
           p.id,
           p.serviceId,

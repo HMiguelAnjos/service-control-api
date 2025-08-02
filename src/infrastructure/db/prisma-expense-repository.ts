@@ -17,9 +17,11 @@ export class PrismaExpenseRepository implements IExpenseRepository {
   }
 
   async findAll(): Promise<Expense[]> {
-    const rawExpenses = await prisma.expense.findMany();
+    const rawExpenses = await prisma.expense.findMany({
+      where: { deletedAt: null },
+    });
     return rawExpenses.map(
-      (e) =>
+      (e: any) =>
         new Expense(
           e.id,
           e.serviceId,

@@ -16,9 +16,11 @@ export class PrismaProductRepository implements IProductRepository {
   }
 
   async findAll(): Promise<Product[]> {
-    const rawProducts = await prisma.product.findMany();
+    const rawProducts = await prisma.product.findMany({
+      where: { deletedAt: null },
+    });
     return rawProducts.map(
-      (p) => new Product(p.id, p.name, p.unitCost.toNumber(), p.description ?? undefined),
+      (p: any) => new Product(p.id, p.name, p.unitCost.toNumber(), p.description ?? undefined),
     );
   }
 

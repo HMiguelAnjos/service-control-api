@@ -16,8 +16,10 @@ export class PrismaServiceProductRepository implements IServiceProductRepository
   }
 
   async findAll(): Promise<ServiceProduct[]> {
-    const raw = await prisma.service_product.findMany();
-    return raw.map((sp) =>
+    const raw = await prisma.service_product.findMany({
+      where: { deletedAt: null },
+    });
+    return raw.map((sp: any) =>
       new ServiceProduct(
         sp.id,
         sp.serviceId,

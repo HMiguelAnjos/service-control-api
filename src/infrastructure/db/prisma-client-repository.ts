@@ -16,15 +16,11 @@ export class PrismaClientRepository implements IClientRepository {
   }
 
   async findAll(): Promise<Client[]> {
-    const rawClients = await prisma.client.findMany();
+    const rawClients = await prisma.client.findMany({
+      where: { deletedAt: null },
+    });
     return rawClients.map(
-      (c) =>
-        new Client(
-          c.id,
-          c.name,
-          c.phone ?? undefined,
-          c.email ?? undefined,
-        )
+      (c: any) => new Client(c.id, c.name, c.phone ?? undefined, c.email ?? undefined),
     );
   }
 
@@ -60,7 +56,7 @@ export class PrismaClientRepository implements IClientRepository {
       raw.name,
       raw.phone ?? undefined,
       raw.email ?? undefined,
-      raw.createdAt
+      raw.createdAt,
     );
   }
 }

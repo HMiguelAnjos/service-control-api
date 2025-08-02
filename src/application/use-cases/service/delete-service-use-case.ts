@@ -1,4 +1,4 @@
-import { IServiceRepository } from '../../domain/repositories/iservice-repository';
+import { IServiceRepository } from '../../../domain/repositories/iservice-repository';
 
 export class DeleteServiceUseCase {
   constructor(private repo: IServiceRepository) {}

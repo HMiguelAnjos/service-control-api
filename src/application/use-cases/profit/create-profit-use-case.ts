@@ -1,5 +1,4 @@
 import { Profit } from '../../../domain/entities/profit';
-import { randomUUID } from 'crypto';
 import { IProfitRepository } from '../../../domain/repositories/iprofit-repository';
 
 export class CreateProfitUseCase {

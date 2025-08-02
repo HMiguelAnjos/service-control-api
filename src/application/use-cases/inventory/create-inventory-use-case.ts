@@ -1,6 +1,5 @@
 
 import { Inventory } from '../../../domain/entities/inventory';
-import { randomUUID } from 'crypto';
 import { IInventoryRepository } from '../../../domain/repositories/iinventory-repository';
 
 export class CreateInventoryUseCase {

@@ -1,5 +1,4 @@
 import { Product } from '../../../domain/entities/product';
-import { randomUUID } from 'crypto';
 import { IProductRepository } from '../../../domain/repositories/iproduct-repository';
 
 export class CreateProductUseCase {

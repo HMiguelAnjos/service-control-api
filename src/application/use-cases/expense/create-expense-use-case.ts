@@ -1,6 +1,5 @@
 import { IExpenseRepository } from '../../../domain/repositories/iexpense-repository';
 import { Expense } from '../../../domain/entities/expense';
-import { randomUUID } from 'crypto';
 
 export class CreateExpenseUseCase {
   constructor(private repo: IExpenseRepository) {}

@@ -48,7 +48,7 @@ export class PrismaInventoryRepository implements IInventoryRepository {
 
   async findOne(id: number): Promise<Inventory | null> {
     const raw = await prisma.inventory.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
     });
 
     if (!raw) return null;

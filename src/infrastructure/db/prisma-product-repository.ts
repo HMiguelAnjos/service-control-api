@@ -46,7 +46,7 @@ export class PrismaProductRepository implements IProductRepository {
 
   async findOne(id: number): Promise<Product | null> {
     const raw = await prisma.product.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
     });
 
     if (!raw) return null;

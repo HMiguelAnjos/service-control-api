@@ -49,7 +49,7 @@ export class PrismaProcedureTypeRepository implements IProcedureTypeRepository {
 
   async findOne(id: number): Promise<ProcedureType | null> {
     const raw = await prisma.procedure_type.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
     });
 
     if (!raw) return null;

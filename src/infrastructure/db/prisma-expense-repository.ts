@@ -55,7 +55,7 @@ export class PrismaExpenseRepository implements IExpenseRepository {
 
   async findOne(id: number): Promise<Expense | null> {
     const raw = await prisma.expense.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
     });
 
     if (!raw) return null;

@@ -46,7 +46,7 @@ export class PrismaClientRepository implements IClientRepository {
 
   async findOne(id: number): Promise<Client | null> {
     const raw = await prisma.client.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
     });
 
     if (!raw) return null;

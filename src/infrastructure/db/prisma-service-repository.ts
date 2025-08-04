@@ -49,7 +49,7 @@ export class PrismaServiceRepository implements IServiceRepository {
 
   async delete(id: number): Promise<void> {
     await prisma.service.update({
-      where: { id },
+      where: { id, deletedAt: null },
       data: {
         deletedAt: new Date(),
       } as any,

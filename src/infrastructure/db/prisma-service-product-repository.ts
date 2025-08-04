@@ -51,7 +51,7 @@ export class PrismaServiceProductRepository implements IServiceProductRepository
 
   async findOne(id: number): Promise<ServiceProduct | null> {
     const sp = await prisma.service_product.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
     });
 
     if (!sp) return null;

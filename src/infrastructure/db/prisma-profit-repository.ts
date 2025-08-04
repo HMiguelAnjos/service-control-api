@@ -52,7 +52,7 @@ export class PrismaProfitRepository implements IProfitRepository {
 
   async findOne(id: number): Promise<Profit | null> {
     const raw = await prisma.profit.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
     });
 
     if (!raw) return null;

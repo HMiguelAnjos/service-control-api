@@ -1,4 +1,4 @@
-import { IProcedureTypeRepository } from '../../../domain/repositories/iprocedure-type-repository';
+import { IProcedureTypeRepository } from '../../ports/iprocedure-type-repository';
 
 export class DeleteProcedureTypeUseCase {
   constructor(private repo: IProcedureTypeRepository) {}

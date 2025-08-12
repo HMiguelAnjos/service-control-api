@@ -1,5 +1,5 @@
 import { ProcedureType } from "../../../domain/entities/procedure-type";
-import { IProcedureTypeRepository } from "../../../domain/repositories/iprocedure-type-repository";
+import { IProcedureTypeRepository } from "../../ports/iprocedure-type-repository";
 
 
 export class UpdateProcedureTypeUseCase {

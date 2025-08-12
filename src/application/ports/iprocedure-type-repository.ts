@@ -1,4 +1,4 @@
-import { ProcedureType } from "../entities/procedure-type";
+import { ProcedureType } from "../../domain/entities/procedure-type";
 
 export interface IProcedureTypeRepository {
   create(proceduretype: ProcedureType): Promise<void>;

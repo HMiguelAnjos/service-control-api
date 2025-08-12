@@ -1,4 +1,4 @@
-import { IExpenseRepository } from '../../../domain/repositories/iexpense-repository';
+import { IExpenseRepository } from '../../ports/iexpense-repository';
 import { Expense } from '../../../domain/entities/expense';
 
 export class UpdateExpenseUseCase {

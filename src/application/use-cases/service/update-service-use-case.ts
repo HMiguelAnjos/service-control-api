@@ -1,4 +1,4 @@
-import { IServiceRepository } from '../../../domain/repositories/iservice-repository';
+import { IServiceRepository } from '../../ports/iservice-repository';
 import { Service } from '../../../domain/entities/service';
 
 export class UpdateServiceUseCase {

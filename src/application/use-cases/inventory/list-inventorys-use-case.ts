@@ -1,6 +1,6 @@
 
-import { IInventoryRepository } from '../../../domain/repositories/iinventory-repository';
-import { InventoryDTO } from '../../../domain/types/inventory-dto';
+import { IInventoryRepository } from '../../ports/iinventory-repository';
+import { InventoryDTO } from '../../dto/inventory-dto';
 
 export class ListInventorysUseCase {
   constructor(private repo: IInventoryRepository) {}

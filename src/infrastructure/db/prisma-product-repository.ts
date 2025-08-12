@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Product } from '../../domain/entities/product';
-import { IProductRepository } from '../../domain/repositories/iproduct-repository';
+import { IProductRepository } from '../../application/ports/iproduct-repository';
 
 const prisma = new PrismaClient();
 

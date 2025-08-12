@@ -1,4 +1,4 @@
-import { IInventoryRepository } from '../../../domain/repositories/iinventory-repository';
+import { IInventoryRepository } from '../../ports/iinventory-repository';
 
 export class DeleteInventoryUseCase {
   constructor(private repo: IInventoryRepository) {}

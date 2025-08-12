@@ -1,4 +1,4 @@
-import { IProfitRepository } from '../../../domain/repositories/iprofit-repository';
+import { IProfitRepository } from '../../ports/iprofit-repository';
 import { Profit } from '../../../domain/entities/profit';
 
 export class UpdateProfitUseCase {

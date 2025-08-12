@@ -1,5 +1,5 @@
 import { Product } from '../../../domain/entities/product';
-import { IProductRepository } from '../../../domain/repositories/iproduct-repository';
+import { IProductRepository } from '../../ports/iproduct-repository';
 
 export class CreateProductUseCase {
   constructor(private repo: IProductRepository) {}

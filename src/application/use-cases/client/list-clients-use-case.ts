@@ -1,5 +1,5 @@
-import { IClientRepository } from '../../../domain/repositories/iclient-repository';
-import { ClientDTO } from '../../../domain/types/client-dto';
+import { IClientRepository } from '../../ports/iclient-repository';
+import { ClientDTO } from '../../dto/client-dto';
 
 export class ListClientsUseCase {
   constructor(private repo: IClientRepository) {}

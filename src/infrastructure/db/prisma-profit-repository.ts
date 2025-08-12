@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Profit } from '../../domain/entities/profit';
-import { IProfitRepository } from '../../domain/repositories/iprofit-repository';
+import { IProfitRepository } from '../../application/ports/iprofit-repository';
 
 const prisma = new PrismaClient();
 

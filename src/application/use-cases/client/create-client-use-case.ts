@@ -1,4 +1,4 @@
-import { IClientRepository } from '../../../domain/repositories/iclient-repository';
+import { IClientRepository } from '../../ports/iclient-repository';
 import { Client } from '../../../domain/entities/client';
 
 export class CreateClientUseCase {

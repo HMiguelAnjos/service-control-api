@@ -1,4 +1,4 @@
-import { ServiceProduct } from "../entities/service-product";
+import { ServiceProduct } from "../../domain/entities/service-product";
 
 export interface IServiceProductRepository {
   create(serviceproduct: ServiceProduct): Promise<void>;

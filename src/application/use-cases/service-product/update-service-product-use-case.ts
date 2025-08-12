@@ -1,5 +1,5 @@
 import { ServiceProduct } from "../../../domain/entities/service-product";
-import { IServiceProductRepository } from "../../../domain/repositories/iservice-product-repository";
+import { IServiceProductRepository } from "../../ports/iservice-product-repository";
 
 export class UpdateServiceProductUseCase {
   constructor(private repo: IServiceProductRepository) {}

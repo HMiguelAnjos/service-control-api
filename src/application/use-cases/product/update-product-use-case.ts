@@ -1,4 +1,4 @@
-import { IProductRepository } from '../../../domain/repositories/iproduct-repository';
+import { IProductRepository } from '../../ports/iproduct-repository';
 import { Product } from '../../../domain/entities/product';
 
 export class UpdateProductUseCase {

@@ -1,5 +1,5 @@
 import { Profit } from '../../../domain/entities/profit';
-import { IProfitRepository } from '../../../domain/repositories/iprofit-repository';
+import { IProfitRepository } from '../../ports/iprofit-repository';
 
 export class CreateProfitUseCase {
   constructor(private repo: IProfitRepository) {}

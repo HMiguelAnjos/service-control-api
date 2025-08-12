@@ -1,5 +1,5 @@
-import { IServiceProductRepository } from '../../../domain/repositories/iservice-product-repository';
-import { ServiceProductDTO } from '../../../domain/types/service-product-dto';
+import { IServiceProductRepository } from '../../ports/iservice-product-repository';
+import { ServiceProductDTO } from '../../dto/service-product-dto';
 
 export class ListServiceProductsUseCase {
   constructor(private repo: IServiceProductRepository) {}

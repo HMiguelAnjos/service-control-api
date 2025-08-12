@@ -1,4 +1,4 @@
-import { IExpenseRepository } from '../../../domain/repositories/iexpense-repository';
+import { IExpenseRepository } from '../../ports/iexpense-repository';
 
 export class DeleteExpenseUseCase {
   constructor(private repo: IExpenseRepository) {}

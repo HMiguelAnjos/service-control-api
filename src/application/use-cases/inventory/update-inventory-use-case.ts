@@ -1,4 +1,4 @@
-import { IInventoryRepository } from '../../../domain/repositories/iinventory-repository';
+import { IInventoryRepository } from '../../ports/iinventory-repository';
 import { Inventory } from '../../../domain/entities/inventory';
 
 export class UpdateInventoryUseCase {

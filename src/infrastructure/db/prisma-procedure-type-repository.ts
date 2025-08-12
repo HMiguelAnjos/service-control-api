@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { ProcedureType } from '../../domain/entities/procedure-type';
-import { IProcedureTypeRepository } from '../../domain/repositories/iprocedure-type-repository';
+import { IProcedureTypeRepository } from '../../application/ports/iprocedure-type-repository';
 
 const prisma = new PrismaClient();
 

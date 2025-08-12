@@ -1,4 +1,4 @@
-import { IClientRepository } from '../../../domain/repositories/iclient-repository';
+import { IClientRepository } from '../../ports/iclient-repository';
 
 export class DeleteClientUseCase {
   constructor(private repo: IClientRepository) {}

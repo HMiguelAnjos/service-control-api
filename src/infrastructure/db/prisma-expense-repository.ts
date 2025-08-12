@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Expense } from '../../domain/entities/expense';
-import { IExpenseRepository } from '../../domain/repositories/iexpense-repository';
+import { IExpenseRepository } from '../../application/ports/iexpense-repository';
 
 const prisma = new PrismaClient();
 

@@ -1,5 +1,5 @@
-import { IExpenseRepository } from '../../../domain/repositories/iexpense-repository';
-import { ExpenseDTO } from '../../../domain/types/expense-dto';
+import { IExpenseRepository } from '../../ports/iexpense-repository';
+import { ExpenseDTO } from '../../dto/expense-dto';
 
 export class ListExpensesUseCase {
   constructor(private repo: IExpenseRepository) {}

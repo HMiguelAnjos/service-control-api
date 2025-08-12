@@ -1,5 +1,5 @@
 import { Service } from '../../../domain/entities/service';
-import { IServiceRepository } from '../../../domain/repositories/iservice-repository';
+import { IServiceRepository } from '../../ports/iservice-repository';
 
 export class CreateServiceUseCase {
   constructor(private repo: IServiceRepository) {}

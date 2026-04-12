@@ -9,44 +9,44 @@ export class ExpenseController {
     private createUseCase: CreateExpenseUseCase,
     private listUseCase: ListExpensesUseCase,
     private updateUseCase: UpdateExpenseUseCase,
-    private deleteUseCase: DeleteExpenseUseCase
+    private deleteUseCase: DeleteExpenseUseCase,
   ) {}
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      await this.createUseCase.execute(req.body);
+      const userId = req.user!.id;
+      await this.createUseCase.execute({ ...req.body, userId });
       return res.status(201).send();
-    } catch (error: any) {
+    } catch (error) {
       next(error);
     }
   }
 
-  async list(_req: Request, res: Response, next: NextFunction) {
+  async list(req: Request, res: Response, next: NextFunction) {
     try {
-      const expenses = await this.listUseCase.execute();
+      const expenses = await this.listUseCase.execute(req.user!.id);
       return res.json(expenses);
-    } catch (error: any) {
+    } catch (error) {
       next(error);
     }
   }
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id;
-      const data = { ...req.body, id };
-      await this.updateUseCase.execute(data);
+      const id = Number(req.params.id);
+      const userId = req.user!.id;
+      await this.updateUseCase.execute({ ...req.body, id, userId });
       return res.status(204).send();
-    } catch (error: any) {
+    } catch (error) {
       next(error);
     }
   }
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id } = req.params;
-      await this.deleteUseCase.execute(Number(req.params.id));
+      await this.deleteUseCase.execute(Number(req.params.id), req.user!.id);
       return res.status(204).send();
-    } catch (error: any) {
+    } catch (error) {
       next(error);
     }
   }

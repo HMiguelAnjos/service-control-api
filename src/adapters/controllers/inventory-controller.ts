@@ -9,42 +9,44 @@ export class InventoryController {
     private createUseCase: CreateInventoryUseCase,
     private listUseCase: ListInventorysUseCase,
     private updateUseCase: UpdateInventoryUseCase,
-    private deleteUseCase: DeleteInventoryUseCase
+    private deleteUseCase: DeleteInventoryUseCase,
   ) {}
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      await this.createUseCase.execute(req.body);
+      const userId = req.user!.id;
+      await this.createUseCase.execute({ ...req.body, userId });
       return res.status(201).send();
-    } catch (error: any) {
+    } catch (error) {
       next(error);
     }
   }
 
-  async list(_req: Request, res: Response, next: NextFunction) {
+  async list(req: Request, res: Response, next: NextFunction) {
     try {
-      const inventory = await this.listUseCase.execute();
+      const inventory = await this.listUseCase.execute(req.user!.id);
       return res.json(inventory);
-    } catch (error: any) {
+    } catch (error) {
       next(error);
     }
   }
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id;
-      await this.updateUseCase.execute({ ...req.body, id });
+      const id = Number(req.params.id);
+      const userId = req.user!.id;
+      await this.updateUseCase.execute({ ...req.body, id, userId });
       return res.status(204).send();
-    } catch (error: any) {
+    } catch (error) {
       next(error);
     }
   }
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await this.deleteUseCase.execute(Number(req.params.id));
+      await this.deleteUseCase.execute(Number(req.params.id), req.user!.id);
       return res.status(204).send();
-    } catch (error: any) {
+    } catch (error) {
       next(error);
     }
   }

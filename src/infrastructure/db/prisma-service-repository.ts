@@ -1,13 +1,12 @@
-import { PrismaClient } from '@prisma/client';
 import { Service } from '../../domain/entities/service';
 import { IServiceRepository } from '../../application/ports/iservice-repository';
-
-const prisma = new PrismaClient();
+import prisma from './prisma';
 
 export class PrismaServiceRepository implements IServiceRepository {
-  async create(service: Service): Promise<void> {
-    await prisma.service.create({
+  async create(service: Service): Promise<Service> {
+    const raw = await prisma.service.create({
       data: {
+        userId: service.userId,
         clientId: service.clientId,
         procedureId: service.procedureId,
         description: service.description,
@@ -15,61 +14,69 @@ export class PrismaServiceRepository implements IServiceRepository {
         date: service.date,
       },
     });
+    return new Service(raw.id, raw.userId, raw.clientId, raw.procedureId, raw.price.toNumber(), raw.date, raw.description ?? undefined);
   }
 
-  async findAll(): Promise<Service[]> {
+  async findAll(userId: number): Promise<Service[]> {
     const rawServices = await prisma.service.findMany({
-      where: { deletedAt: null },
+      where: { userId, deletedAt: null },
     });
     return rawServices.map(
-      (s: any) =>
+      (s) =>
         new Service(
           s.id,
+          s.userId,
           s.clientId,
           s.procedureId,
           s.price.toNumber(),
           s.date,
           s.description ?? undefined,
-        )
+        ),
     );
   }
 
-  async update(service: Service): Promise<void> {
-    await prisma.service.update({
-      where: { id: service.id },
-      data: {
-        clientId: service.clientId,
-        procedureId: service.procedureId,
-        description: service.description,
-        price: service.price,
-        date: service.date,
-      },
+  async findOne(id: number, userId: number): Promise<Service | null> {
+    const raw = await prisma.service.findFirst({
+      where: { id, userId, deletedAt: null },
     });
-  }
-
-  async delete(id: number): Promise<void> {
-    await prisma.service.update({
-      where: { id, deletedAt: null },
-      data: {
-        deletedAt: new Date(),
-      } as any,
-    });
-  }
-
-  async findOne(id: number): Promise<Service | null> {
-    const raw = await prisma.service.findUnique({
-      where: { id },
-    });
-
     if (!raw) return null;
-
     return new Service(
       raw.id,
+      raw.userId,
       raw.clientId,
       raw.procedureId,
       raw.price.toNumber(),
       raw.date,
       raw.description ?? undefined,
     );
+  }
+
+  async update(service: Service): Promise<void> {
+    await prisma.service.updateMany({
+      where: { id: service.id, userId: service.userId, deletedAt: null },
+      data: {
+        clientId: service.clientId,
+        procedureId: service.procedureId,
+        description: service.description,
+        price: service.price,
+        date: service.date,
+      },
+    });
+  }
+
+  async findByClient(clientId: number, userId: number): Promise<Service[]> {
+    const raw = await prisma.service.findMany({
+      where: { clientId, userId, deletedAt: null },
+    });
+    return raw.map(
+      (s) => new Service(s.id, s.userId, s.clientId, s.procedureId, s.price.toNumber(), s.date, s.description ?? undefined),
+    );
+  }
+
+  async delete(id: number, userId: number): Promise<void> {
+    await prisma.service.updateMany({
+      where: { id, userId, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
   }
 }

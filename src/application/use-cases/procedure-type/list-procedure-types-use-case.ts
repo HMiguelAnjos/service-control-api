@@ -1,11 +1,10 @@
-
 import { IProcedureTypeRepository } from '../../ports/iprocedure-type-repository';
-import { ProcedureTypeDTO } from '../../dto/procedure-type-dto';
+import { ProcedureType } from '../../../domain/entities/procedure-type';
 
 export class ListProcedureTypesUseCase {
   constructor(private repo: IProcedureTypeRepository) {}
 
-  async execute(): Promise<ProcedureTypeDTO[]> {
-    return this.repo.findAll();
+  async execute(userId: number): Promise<ProcedureType[]> {
+    return this.repo.findAll(userId);
   }
 }

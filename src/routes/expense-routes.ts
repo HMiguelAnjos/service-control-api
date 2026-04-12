@@ -1,24 +1,33 @@
 import { Router } from 'express';
 import { ExpenseController } from '../adapters/controllers/expense-controller';
-
 import { PrismaExpenseRepository } from '../infrastructure/db/prisma-expense-repository';
+import { PrismaServiceRepository } from '../infrastructure/db/prisma-service-repository';
+import { PrismaProfitRepository } from '../infrastructure/db/prisma-profit-repository';
 import { CreateExpenseUseCase } from '../application/use-cases/expense/create-expense-use-case';
 import { DeleteExpenseUseCase } from '../application/use-cases/expense/delete-expense-use-case';
 import { ListExpensesUseCase } from '../application/use-cases/expense/list-expenses-use-case';
 import { UpdateExpenseUseCase } from '../application/use-cases/expense/update-expense-use-case';
+import { authMiddleware } from '../middlewares/auth/auth-middleware';
+import { validate, validateId } from '../middlewares/validation/validate';
+import { createExpenseSchema, updateExpenseSchema } from '../middlewares/validation/schemas/expense-schemas';
 
 const router = Router();
 
 const repo = new PrismaExpenseRepository();
-const createUseCase = new CreateExpenseUseCase(repo);
+const serviceRepo = new PrismaServiceRepository();
+const profitRepo = new PrismaProfitRepository();
+
+const createUseCase = new CreateExpenseUseCase(repo, serviceRepo, profitRepo);
 const listUseCase = new ListExpensesUseCase(repo);
-const updateUseCase = new UpdateExpenseUseCase(repo);
-const deleteUseCase = new DeleteExpenseUseCase(repo);
+const updateUseCase = new UpdateExpenseUseCase(repo, serviceRepo, profitRepo);
+const deleteUseCase = new DeleteExpenseUseCase(repo, serviceRepo, profitRepo);
 const controller = new ExpenseController(createUseCase, listUseCase, updateUseCase, deleteUseCase);
 
-router.post('/', (req, res, next) => controller.create(req, res, next));
+router.use(authMiddleware);
+
+router.post('/', validate(createExpenseSchema), (req, res, next) => controller.create(req, res, next));
 router.get('/', (req, res, next) => controller.list(req, res, next));
-router.put('/:id', (req, res, next) => controller.update(req, res, next));
-router.delete('/:id', (req, res, next) => controller.delete(req, res, next));
+router.put('/:id', validateId, validate(updateExpenseSchema), (req, res, next) => controller.update(req, res, next));
+router.delete('/:id', validateId, (req, res, next) => controller.delete(req, res, next));
 
 export default router;

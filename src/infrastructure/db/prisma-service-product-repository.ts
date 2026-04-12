@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import { ServiceProduct } from '../../domain/entities/service-product';
 import { IServiceProductRepository } from '../../application/ports/iservice-product-repository';
-
-const prisma = new PrismaClient();
+import prisma from './prisma';
 
 export class PrismaServiceProductRepository implements IServiceProductRepository {
   async create(serviceProduct: ServiceProduct): Promise<void> {
@@ -15,23 +13,24 @@ export class PrismaServiceProductRepository implements IServiceProductRepository
     });
   }
 
-  async findAll(): Promise<ServiceProduct[]> {
+  async findAll(userId: number): Promise<ServiceProduct[]> {
     const raw = await prisma.service_product.findMany({
-      where: { deletedAt: null },
+      where: { deletedAt: null, service: { userId, deletedAt: null } },
     });
-    return raw.map((sp: any) =>
-      new ServiceProduct(
-        sp.id,
-        sp.serviceId,
-        sp.productId,
-        sp.quantity
-      )
-    );
+    return raw.map((sp) => new ServiceProduct(sp.id, sp.serviceId, sp.productId, sp.quantity));
   }
 
-  async update(serviceProduct: ServiceProduct): Promise<void> {
-    await prisma.service_product.update({
-      where: { id: serviceProduct.id },
+  async findOne(id: number, userId: number): Promise<ServiceProduct | null> {
+    const sp = await prisma.service_product.findFirst({
+      where: { id, deletedAt: null, service: { userId } },
+    });
+    if (!sp) return null;
+    return new ServiceProduct(sp.id, sp.serviceId, sp.productId, sp.quantity);
+  }
+
+  async update(serviceProduct: ServiceProduct, userId: number): Promise<void> {
+    await prisma.service_product.updateMany({
+      where: { id: serviceProduct.id, deletedAt: null, service: { userId } },
       data: {
         serviceId: serviceProduct.serviceId,
         productId: serviceProduct.productId,
@@ -40,27 +39,17 @@ export class PrismaServiceProductRepository implements IServiceProductRepository
     });
   }
 
-  async delete(id: number): Promise<void> {
-    await prisma.service_product.update({
-      where: { id },
-      data: {
-        deletedAt: new Date(),
-      } as any,
+  async delete(id: number, userId: number): Promise<void> {
+    await prisma.service_product.updateMany({
+      where: { id, deletedAt: null, service: { userId } },
+      data: { deletedAt: new Date() },
     });
   }
 
-  async findOne(id: number): Promise<ServiceProduct | null> {
-    const sp = await prisma.service_product.findUnique({
-      where: { id, deletedAt: null },
+  async deleteByServiceId(serviceId: number): Promise<void> {
+    await prisma.service_product.updateMany({
+      where: { serviceId, deletedAt: null },
+      data: { deletedAt: new Date() },
     });
-
-    if (!sp) return null;
-
-    return new ServiceProduct(
-      sp.id,
-      sp.serviceId,
-      sp.productId,
-      sp.quantity
-    );
   }
 }

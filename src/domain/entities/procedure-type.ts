@@ -1,14 +1,12 @@
 export class ProcedureType {
   constructor(
     public readonly id: number | undefined,
+    public readonly userId: number,
     public readonly name: string,
-    public readonly description?: string,
-    public readonly createdAt: Date = new Date(),
-    public readonly updatedAt: Date = new Date(),
-    public readonly deletedAt: Date | null = null
+    public readonly description?: string
   ) {}
 
   isValid(): boolean {
-    return this.name.length > 0;
+    return this.userId > 0 && this.name.trim().length > 0;
   }
 }

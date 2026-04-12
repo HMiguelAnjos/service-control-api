@@ -3,7 +3,7 @@ import { IServiceProductRepository } from '../../ports/iservice-product-reposito
 export class DeleteServiceProductUseCase {
   constructor(private repo: IServiceProductRepository) {}
 
-  async execute(id: number) {
-    await this.repo.delete(id);
+  async execute(id: number, userId: number) {
+    await this.repo.delete(id, userId);
   }
 }

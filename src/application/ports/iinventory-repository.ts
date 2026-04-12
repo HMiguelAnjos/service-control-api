@@ -1,8 +1,9 @@
-import { Inventory } from "../../domain/entities/inventory";
+import { Inventory } from '../../domain/entities/inventory';
 
 export interface IInventoryRepository {
   create(inventory: Inventory): Promise<void>;
-  findAll(): Promise<Inventory[]>;
-  update(inventory: Inventory): Promise<void>;
-  delete(id: number): Promise<void>;
+  findAll(userId: number): Promise<Inventory[]>;
+  findOne(id: number, userId: number): Promise<Inventory | null>;
+  update(inventory: Inventory, userId: number): Promise<void>;
+  delete(id: number, userId: number): Promise<void>;
 }

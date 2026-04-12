@@ -38,3 +38,5 @@ jest-output.json
 prisma/migrations/
 
 /src/generated/prisma
+
+.tsbuildinfo

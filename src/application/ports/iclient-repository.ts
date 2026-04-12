@@ -1,8 +1,9 @@
-import { Client } from "../../domain/entities/client";
+import { Client } from '../../domain/entities/client';
 
 export interface IClientRepository {
   create(client: Client): Promise<void>;
-  findAll(): Promise<Client[]>;
+  findAll(userId: number): Promise<Client[]>;
+  findOne(id: number, userId: number): Promise<Client | null>;
   update(client: Client): Promise<void>;
-  delete(id: number): Promise<void>;
+  delete(id: number, userId: number): Promise<void>;
 }

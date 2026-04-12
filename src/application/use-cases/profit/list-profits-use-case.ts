@@ -1,10 +1,10 @@
 import { IProfitRepository } from '../../ports/iprofit-repository';
-import { ProfitDTO } from '../../dto/profit-dto';
+import { Profit } from '../../../domain/entities/profit';
 
 export class ListProfitsUseCase {
   constructor(private repo: IProfitRepository) {}
 
-  async execute(): Promise<ProfitDTO[]> {
-    return this.repo.findAll();
+  async execute(userId: number): Promise<Profit[]> {
+    return this.repo.findAll(userId);
   }
 }

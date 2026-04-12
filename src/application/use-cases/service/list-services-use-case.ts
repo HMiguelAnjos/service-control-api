@@ -1,10 +1,10 @@
 import { IServiceRepository } from '../../ports/iservice-repository';
-import { ServiceDTO } from '../../dto/service-dto';
+import { Service } from '../../../domain/entities/service';
 
 export class ListServicesUseCase {
   constructor(private repo: IServiceRepository) {}
 
-  async execute(): Promise<ServiceDTO[]> {
-    return this.repo.findAll();
+  async execute(userId: number): Promise<Service[]> {
+    return this.repo.findAll(userId);
   }
 }

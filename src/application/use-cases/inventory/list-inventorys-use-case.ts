@@ -1,11 +1,10 @@
-
 import { IInventoryRepository } from '../../ports/iinventory-repository';
-import { InventoryDTO } from '../../dto/inventory-dto';
+import { Inventory } from '../../../domain/entities/inventory';
 
 export class ListInventorysUseCase {
   constructor(private repo: IInventoryRepository) {}
 
-  async execute(): Promise<InventoryDTO[]> {
-    return this.repo.findAll();
+  async execute(userId: number): Promise<Inventory[]> {
+    return this.repo.findAll(userId);
   }
 }

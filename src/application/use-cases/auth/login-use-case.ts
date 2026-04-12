@@ -1,0 +1,32 @@
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { IUserRepository } from '../../ports/iuser-repository';
+import { BadRequest } from '../../../middlewares/errors/bad-request';
+
+export class LoginUseCase {
+  constructor(private repo: IUserRepository) {}
+
+  async execute(input: { email: string; password: string }) {
+    const user = await this.repo.findByEmail(input.email);
+    if (!user) {
+      throw new BadRequest(401, 'E-mail ou senha inválidos');
+    }
+
+    const passwordMatch = await bcrypt.compare(input.password, user.passwordHash);
+    if (!passwordMatch) {
+      throw new BadRequest(401, 'E-mail ou senha inválidos');
+    }
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('JWT_SECRET não configurado');
+
+    const token = jwt.sign({ id: user.id, email: user.email }, secret, {
+      expiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
+    } as jwt.SignOptions);
+
+    return {
+      token,
+      user: { id: user.id, name: user.name, email: user.email },
+    };
+  }
+}

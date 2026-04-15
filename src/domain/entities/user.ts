@@ -5,7 +5,9 @@ export class User {
     public readonly email: string,
     public readonly passwordHash: string,
     public readonly createdAt: Date = new Date(),
-    public readonly updatedAt: Date = new Date()
+    public readonly updatedAt: Date = new Date(),
+    public readonly resetToken: string | null = null,
+    public readonly resetTokenExpires: Date | null = null,
   ) {}
 
   isValid(): boolean {

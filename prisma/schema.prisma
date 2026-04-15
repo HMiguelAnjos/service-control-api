@@ -11,9 +11,11 @@ model user {
   id           Int       @id @default(autoincrement()) @map("id")
   name         String    @map("name")
   email        String    @unique @map("email")
-  passwordHash String    @map("password_hash")
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
+  passwordHash      String    @map("password_hash")
+  resetToken        String?   @unique @map("reset_token")
+  resetTokenExpires DateTime? @map("reset_token_expires")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
   clients         client[]
   procedure_types procedure_type[]

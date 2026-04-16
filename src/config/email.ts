@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { log } from './logger';
 
 function createTransporter() {
   const host = process.env.SMTP_HOST;
@@ -19,12 +20,9 @@ export async function sendPasswordResetEmail(to: string, resetLink: string): Pro
   const transporter = createTransporter();
 
   if (!transporter) {
-    // Fallback para desenvolvimento: imprime o link no console
-    console.log('\n─────────────────────────────────────────────');
-    console.log('[DEV] Link de redefinição de senha');
-    console.log(`Para: ${to}`);
-    console.log(`Link: ${resetLink}`);
-    console.log('─────────────────────────────────────────────\n');
+    log.warn('Email', 'SMTP não configurado — exibindo link no console (modo dev)');
+    log.info('Email', `Para: ${to}`);
+    log.info('Email', `Link: ${resetLink}`);
     return;
   }
 

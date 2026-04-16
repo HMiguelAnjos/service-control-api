@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../../../domain/entities/user';
 import { IUserRepository } from '../../ports/iuser-repository';
 import { BadRequest } from '../../../middlewares/errors/bad-request';
+import { log } from '../../../config/logger';
 
 export class RegisterUseCase {
   constructor(private repo: IUserRepository) {}
@@ -10,6 +11,7 @@ export class RegisterUseCase {
   async execute(input: { name: string; email: string; password: string }) {
     const existing = await this.repo.findByEmail(input.email);
     if (existing) {
+      log.warn('Register', `Tentativa de cadastro com e-mail já existente: ${input.email}`);
       throw new BadRequest(409, 'E-mail já cadastrado');
     }
 
@@ -17,6 +19,7 @@ export class RegisterUseCase {
     const entity = new User(undefined, input.name, input.email, passwordHash);
 
     if (!entity.isValid()) {
+      log.warn('Register', `Dados inválidos para cadastro: ${input.email}`);
       throw new BadRequest(400, 'Dados de cadastro inválidos');
     }
 
@@ -28,6 +31,8 @@ export class RegisterUseCase {
     const token = jwt.sign({ id: created.id, email: created.email }, secret, {
       expiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
     } as jwt.SignOptions);
+
+    log.success('Register', `Novo usuário criado: ${input.email}`);
 
     return {
       token,

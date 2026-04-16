@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import { ExpenseController } from '../adapters/controllers/expense-controller';
 import { PrismaExpenseRepository } from '../infrastructure/db/prisma-expense-repository';
-import { PrismaServiceRepository } from '../infrastructure/db/prisma-service-repository';
-import { PrismaProfitRepository } from '../infrastructure/db/prisma-profit-repository';
 import { CreateExpenseUseCase } from '../application/use-cases/expense/create-expense-use-case';
 import { DeleteExpenseUseCase } from '../application/use-cases/expense/delete-expense-use-case';
 import { ListExpensesUseCase } from '../application/use-cases/expense/list-expenses-use-case';
@@ -14,13 +12,11 @@ import { createExpenseSchema, updateExpenseSchema } from '../middlewares/validat
 const router = Router();
 
 const repo = new PrismaExpenseRepository();
-const serviceRepo = new PrismaServiceRepository();
-const profitRepo = new PrismaProfitRepository();
 
-const createUseCase = new CreateExpenseUseCase(repo, serviceRepo, profitRepo);
+const createUseCase = new CreateExpenseUseCase(repo);
 const listUseCase = new ListExpensesUseCase(repo);
-const updateUseCase = new UpdateExpenseUseCase(repo, serviceRepo, profitRepo);
-const deleteUseCase = new DeleteExpenseUseCase(repo, serviceRepo, profitRepo);
+const updateUseCase = new UpdateExpenseUseCase(repo);
+const deleteUseCase = new DeleteExpenseUseCase(repo);
 const controller = new ExpenseController(createUseCase, listUseCase, updateUseCase, deleteUseCase);
 
 router.use(authMiddleware);

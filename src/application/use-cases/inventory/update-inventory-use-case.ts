@@ -5,8 +5,14 @@ import { BadRequest } from '../../../middlewares/errors/bad-request';
 export class UpdateInventoryUseCase {
   constructor(private repo: IInventoryRepository) {}
 
-  async execute(input: { id: number; userId: number; productId: number; quantity: number }) {
-    const entity = new Inventory(input.id, input.productId, input.quantity);
+  async execute(input: {
+    id: number;
+    userId: number;
+    productId: number;
+    quantity: number;
+    purchasePrice?: number;
+  }) {
+    const entity = new Inventory(input.id, input.productId, input.quantity, input.purchasePrice);
     if (!entity.isValid()) {
       throw new BadRequest(400, 'Dados do estoque inválidos');
     }

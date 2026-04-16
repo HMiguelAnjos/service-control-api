@@ -3,7 +3,9 @@ export class ProcedureType {
     public readonly id: number | undefined,
     public readonly userId: number,
     public readonly name: string,
-    public readonly description?: string
+    public readonly description?: string,
+    public readonly costValue?: number,
+    public readonly finalValue?: number,
   ) {}
 
   isValid(): boolean {

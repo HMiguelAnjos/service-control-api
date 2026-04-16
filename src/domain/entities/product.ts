@@ -4,7 +4,7 @@ export class Product {
     public readonly userId: number,
     public readonly name: string,
     public readonly unitCost: number,
-    public readonly description?: string
+    public readonly description?: string,
   ) {}
 
   isValid(): boolean {

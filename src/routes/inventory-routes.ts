@@ -16,7 +16,7 @@ const createUseCase = new CreateInventoryUseCase(repo);
 const listUseCase = new ListInventorysUseCase(repo);
 const updateUseCase = new UpdateInventoryUseCase(repo);
 const deleteUseCase = new DeleteInventoryUseCase(repo);
-const controller = new InventoryController(createUseCase, listUseCase, updateUseCase, deleteUseCase);
+const controller = new InventoryController(createUseCase, listUseCase, updateUseCase, deleteUseCase, repo);
 
 router.use(authMiddleware);
 

@@ -1,6 +1,25 @@
-import { Service } from '../../domain/entities/service';
+import { Service, ServiceProcedureInput } from '../../domain/entities/service';
 import { IServiceRepository } from '../../application/ports/iservice-repository';
 import prisma from './prisma';
+
+function toEntity(s: any): Service {
+  const procedures: ServiceProcedureInput[] = (s.procedures ?? []).map((p: any) => ({
+    procedureTypeId: p.procedureTypeId,
+    price: Number(p.price),
+    id: p.id,
+    procedureType: p.procedureType,
+  }));
+  return new Service(s.id, s.userId, s.clientId, Number(s.totalPrice), s.date, s.description ?? undefined, procedures);
+}
+
+const procedureInclude = {
+  include: {
+    procedures: {
+      include: { procedureType: true },
+    },
+    client: true,
+  },
+};
 
 export class PrismaServiceRepository implements IServiceRepository {
   async create(service: Service): Promise<Service> {
@@ -8,75 +27,61 @@ export class PrismaServiceRepository implements IServiceRepository {
       data: {
         userId: service.userId,
         clientId: service.clientId,
-        procedureId: service.procedureId,
         description: service.description,
-        price: service.price,
+        totalPrice: service.totalPrice,
         date: service.date,
+        procedures: {
+          create: (service.procedures ?? []).map((p) => ({
+            procedureTypeId: p.procedureTypeId,
+            price: p.price,
+          })),
+        },
       },
+      ...procedureInclude,
     });
-    return new Service(raw.id, raw.userId, raw.clientId, raw.procedureId, raw.price.toNumber(), raw.date, raw.description ?? undefined);
+    return toEntity(raw);
   }
 
   async findAll(userId: number): Promise<Service[]> {
-    const rawServices = await prisma.service.findMany({
+    const rows = await prisma.service.findMany({
       where: { userId, deletedAt: null },
+      orderBy: { date: 'desc' },
+      ...procedureInclude,
     });
-    return rawServices.map(
-      (s) =>
-        new Service(
-          s.id,
-          s.userId,
-          s.clientId,
-          s.procedureId,
-          s.price.toNumber(),
-          s.date,
-          s.description ?? undefined,
-        ),
-    );
+    return rows.map(toEntity);
   }
 
   async findOne(id: number, userId: number): Promise<Service | null> {
     const raw = await prisma.service.findFirst({
       where: { id, userId, deletedAt: null },
+      ...procedureInclude,
     });
-    if (!raw) return null;
-    return new Service(
-      raw.id,
-      raw.userId,
-      raw.clientId,
-      raw.procedureId,
-      raw.price.toNumber(),
-      raw.date,
-      raw.description ?? undefined,
-    );
-  }
-
-  async update(service: Service): Promise<void> {
-    await prisma.service.updateMany({
-      where: { id: service.id, userId: service.userId, deletedAt: null },
-      data: {
-        clientId: service.clientId,
-        procedureId: service.procedureId,
-        description: service.description,
-        price: service.price,
-        date: service.date,
-      },
-    });
+    return raw ? toEntity(raw) : null;
   }
 
   async findByClient(clientId: number, userId: number): Promise<Service[]> {
-    const raw = await prisma.service.findMany({
+    const rows = await prisma.service.findMany({
       where: { clientId, userId, deletedAt: null },
+      ...procedureInclude,
     });
-    return raw.map(
-      (s) => new Service(s.id, s.userId, s.clientId, s.procedureId, s.price.toNumber(), s.date, s.description ?? undefined),
-    );
+    return rows.map(toEntity);
+  }
+
+  async update(service: Service): Promise<void> {
+    // Remove existing procedures and recreate
+    await prisma.service_procedure.deleteMany({ where: { serviceId: service.id } });
+    await prisma.service.updateMany({
+      where: { id: service.id, userId: service.userId, deletedAt: null },
+      data: { clientId: service.clientId, description: service.description, totalPrice: service.totalPrice, date: service.date },
+    });
+    if (service.procedures?.length) {
+      await prisma.service_procedure.createMany({
+        data: service.procedures.map((p) => ({ serviceId: service.id!, procedureTypeId: p.procedureTypeId, price: p.price })),
+      });
+    }
   }
 
   async delete(id: number, userId: number): Promise<void> {
-    await prisma.service.updateMany({
-      where: { id, userId, deletedAt: null },
-      data: { deletedAt: new Date() },
-    });
+    await prisma.service.updateMany({ where: { id, userId, deletedAt: null }, data: { deletedAt: new Date() } });
   }
 }

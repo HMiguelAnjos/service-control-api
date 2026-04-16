@@ -2,11 +2,16 @@ import { Expense } from '../../domain/entities/expense';
 import { IExpenseRepository } from '../../application/ports/iexpense-repository';
 import prisma from './prisma';
 
+function toEntity(e: any): Expense {
+  return new Expense(e.id, e.userId, e.category, Number(e.amount), e.serviceId ?? undefined, e.notes ?? undefined);
+}
+
 export class PrismaExpenseRepository implements IExpenseRepository {
   async create(expense: Expense): Promise<void> {
     await prisma.expense.create({
       data: {
-        serviceId: expense.serviceId,
+        userId: expense.userId,
+        serviceId: expense.serviceId ?? null,
         category: expense.category,
         amount: expense.amount,
         notes: expense.notes,
@@ -15,53 +20,32 @@ export class PrismaExpenseRepository implements IExpenseRepository {
   }
 
   async findAll(userId: number): Promise<Expense[]> {
-    const rawExpenses = await prisma.expense.findMany({
-      where: { deletedAt: null, service: { userId, deletedAt: null } },
-    });
-    return rawExpenses.map(
-      (e) => new Expense(e.id, e.serviceId, e.category, e.amount.toNumber(), e.notes ?? undefined),
-    );
+    const rows = await prisma.expense.findMany({ where: { userId, deletedAt: null } });
+    return rows.map(toEntity);
   }
 
   async findOne(id: number, userId: number): Promise<Expense | null> {
-    const raw = await prisma.expense.findFirst({
-      where: { id, deletedAt: null, service: { userId } },
-    });
-    if (!raw) return null;
-    return new Expense(raw.id, raw.serviceId, raw.category, raw.amount.toNumber(), raw.notes ?? undefined);
+    const raw = await prisma.expense.findFirst({ where: { id, userId, deletedAt: null } });
+    return raw ? toEntity(raw) : null;
   }
 
   async update(expense: Expense, userId: number): Promise<void> {
     await prisma.expense.updateMany({
-      where: { id: expense.id, deletedAt: null, service: { userId } },
-      data: {
-        serviceId: expense.serviceId,
-        category: expense.category,
-        amount: expense.amount,
-        notes: expense.notes,
-      },
+      where: { id: expense.id, userId, deletedAt: null },
+      data: { serviceId: expense.serviceId ?? null, category: expense.category, amount: expense.amount, notes: expense.notes },
     });
   }
 
   async delete(id: number, userId: number): Promise<void> {
-    await prisma.expense.updateMany({
-      where: { id, deletedAt: null, service: { userId } },
-      data: { deletedAt: new Date() },
-    });
+    await prisma.expense.updateMany({ where: { id, userId, deletedAt: null }, data: { deletedAt: new Date() } });
   }
 
   async sumByServiceId(serviceId: number): Promise<number> {
-    const agg = await prisma.expense.aggregate({
-      where: { serviceId, deletedAt: null },
-      _sum: { amount: true },
-    });
+    const agg = await prisma.expense.aggregate({ where: { serviceId, deletedAt: null }, _sum: { amount: true } });
     return agg._sum.amount?.toNumber() ?? 0;
   }
 
   async deleteByServiceId(serviceId: number): Promise<void> {
-    await prisma.expense.updateMany({
-      where: { serviceId, deletedAt: null },
-      data: { deletedAt: new Date() },
-    });
+    await prisma.expense.updateMany({ where: { serviceId, deletedAt: null }, data: { deletedAt: new Date() } });
   }
 }

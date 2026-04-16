@@ -8,9 +8,9 @@ datasource db {
 }
 
 model user {
-  id           Int       @id @default(autoincrement()) @map("id")
-  name         String    @map("name")
-  email        String    @unique @map("email")
+  id                Int       @id @default(autoincrement()) @map("id")
+  name              String    @map("name")
+  email             String    @unique @map("email")
   passwordHash      String    @map("password_hash")
   resetToken        String?   @unique @map("reset_token")
   resetTokenExpires DateTime? @map("reset_token_expires")
@@ -21,6 +21,7 @@ model user {
   procedure_types procedure_type[]
   products        product[]
   services        service[]
+  expenses        expense[]
 
   @@map("user")
 }
@@ -46,42 +47,80 @@ model procedure_type {
   userId      Int       @map("user_id")
   name        String    @map("name")
   description String?   @map("description")
+  costValue   Decimal?  @map("cost_value") @db.Decimal(10, 2)
+  finalValue  Decimal?  @map("final_value") @db.Decimal(10, 2)
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
-  user     user      @relation(fields: [userId], references: [id])
-  services service[]
+  user               user                     @relation(fields: [userId], references: [id])
+  service_procedures service_procedure[]
+  products           procedure_type_product[]
 
   @@map("procedure_type")
 }
 
+/// Produtos usados em um tipo de procedimento (com quantidade)
+model procedure_type_product {
+  id              Int     @id @default(autoincrement()) @map("id")
+  procedureTypeId Int     @map("procedure_type_id")
+  productId       Int     @map("product_id")
+  quantity        Decimal @map("quantity") @db.Decimal(10, 3)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  procedureType procedure_type @relation(fields: [procedureTypeId], references: [id])
+  product       product        @relation(fields: [productId], references: [id])
+
+  @@unique([procedureTypeId, productId])
+  @@map("procedure_type_product")
+}
+
+/// Um atendimento agora pode ter múltiplos procedimentos
 model service {
   id          Int       @id @default(autoincrement()) @map("id")
   userId      Int       @map("user_id")
   clientId    Int       @map("client_id")
-  procedureId Int       @map("procedure_id")
   description String?   @map("description")
-  price       Decimal   @map("price")
+  totalPrice  Decimal   @map("total_price")
   date        DateTime  @default(now()) @map("date")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
-  user           user            @relation(fields: [userId], references: [id])
-  client         client          @relation(fields: [clientId], references: [id])
-  procedure_type procedure_type  @relation(fields: [procedureId], references: [id])
-
-  expenses     expense[]
-  productsUsed service_product[]
-  profit       profit?
+  user             user                @relation(fields: [userId], references: [id])
+  client           client              @relation(fields: [clientId], references: [id])
+  procedures       service_procedure[]
+  expenses         expense[]
+  profit           profit?
+  service_products service_product[]
 
   @@map("service")
 }
 
+/// Junção: quais procedimentos foram realizados no atendimento e por qual preço
+model service_procedure {
+  id              Int     @id @default(autoincrement()) @map("id")
+  serviceId       Int     @map("service_id")
+  procedureTypeId Int     @map("procedure_type_id")
+  price           Decimal @map("price")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  service       service        @relation(fields: [serviceId], references: [id])
+  procedureType procedure_type @relation(fields: [procedureTypeId], references: [id])
+
+  @@map("service_procedure")
+}
+
+/// Despesas gerais (aluguel, transporte…) OU vinculadas a um atendimento
 model expense {
   id        Int       @id @default(autoincrement()) @map("id")
-  serviceId Int       @map("service_id")
+  userId    Int       @map("user_id")
+  serviceId Int?      @map("service_id")
   category  String    @map("category")
   amount    Decimal   @map("amount")
   notes     String?   @map("notes")
@@ -89,7 +128,8 @@ model expense {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  service service @relation(fields: [serviceId], references: [id])
+  user    user     @relation(fields: [userId], references: [id])
+  service service? @relation(fields: [serviceId], references: [id])
 
   @@map("expense")
 }
@@ -104,20 +144,22 @@ model product {
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
-  user      user              @relation(fields: [userId], references: [id])
-  inventory inventory?
-  usedIn    service_product[]
+  user              user                     @relation(fields: [userId], references: [id])
+  inventory         inventory?
+  usedIn            service_product[]
+  procedure_types   procedure_type_product[]
 
   @@map("product")
 }
 
 model inventory {
-  id        Int       @id @default(autoincrement()) @map("id")
-  productId Int       @unique @map("product_id")
-  quantity  Int       @map("quantity")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  createdAt DateTime  @default(now()) @map("created_at")
-  deletedAt DateTime? @map("deleted_at")
+  id            Int       @id @default(autoincrement()) @map("id")
+  productId     Int       @unique @map("product_id")
+  quantity      Int       @map("quantity")
+  purchasePrice Decimal?  @map("purchase_price") @db.Decimal(10, 2)
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  deletedAt     DateTime? @map("deleted_at")
 
   product product @relation(fields: [productId], references: [id])
 

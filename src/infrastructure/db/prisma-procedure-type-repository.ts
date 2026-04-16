@@ -2,6 +2,24 @@ import { ProcedureType } from '../../domain/entities/procedure-type';
 import { IProcedureTypeRepository } from '../../application/ports/iprocedure-type-repository';
 import prisma from './prisma';
 
+function toEntity(p: {
+  id: number;
+  userId: number;
+  name: string;
+  description: string | null;
+  costValue: any;
+  finalValue: any;
+}): ProcedureType {
+  return new ProcedureType(
+    p.id,
+    p.userId,
+    p.name,
+    p.description ?? undefined,
+    p.costValue != null ? Number(p.costValue) : undefined,
+    p.finalValue != null ? Number(p.finalValue) : undefined,
+  );
+}
+
 export class PrismaProcedureTypeRepository implements IProcedureTypeRepository {
   async create(procedureType: ProcedureType): Promise<void> {
     await prisma.procedure_type.create({
@@ -9,17 +27,17 @@ export class PrismaProcedureTypeRepository implements IProcedureTypeRepository {
         userId: procedureType.userId,
         name: procedureType.name,
         description: procedureType.description,
+        costValue: procedureType.costValue,
+        finalValue: procedureType.finalValue,
       },
     });
   }
 
   async findAll(userId: number): Promise<ProcedureType[]> {
-    const rawProcedureTypes = await prisma.procedure_type.findMany({
+    const rows = await prisma.procedure_type.findMany({
       where: { userId, deletedAt: null },
     });
-    return rawProcedureTypes.map(
-      (p) => new ProcedureType(p.id, p.userId, p.name, p.description ?? undefined),
-    );
+    return rows.map(toEntity);
   }
 
   async findOne(id: number, userId: number): Promise<ProcedureType | null> {
@@ -27,7 +45,7 @@ export class PrismaProcedureTypeRepository implements IProcedureTypeRepository {
       where: { id, userId, deletedAt: null },
     });
     if (!raw) return null;
-    return new ProcedureType(raw.id, raw.userId, raw.name, raw.description ?? undefined);
+    return toEntity(raw);
   }
 
   async update(procedureType: ProcedureType): Promise<void> {
@@ -36,6 +54,8 @@ export class PrismaProcedureTypeRepository implements IProcedureTypeRepository {
       data: {
         name: procedureType.name,
         description: procedureType.description,
+        costValue: procedureType.costValue ?? null,
+        finalValue: procedureType.finalValue ?? null,
       },
     });
   }

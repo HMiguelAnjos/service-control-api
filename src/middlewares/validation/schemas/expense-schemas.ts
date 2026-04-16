@@ -2,9 +2,11 @@ import { z } from 'zod';
 
 const expenseBase = z.object({
   serviceId: z
-    .number({ required_error: 'Atendimento é obrigatório', invalid_type_error: 'serviceId deve ser um número' })
+    .number({ invalid_type_error: 'serviceId deve ser um número' })
     .int('serviceId deve ser um inteiro')
-    .positive('serviceId deve ser positivo'),
+    .positive('serviceId deve ser positivo')
+    .optional()
+    .nullable(),
   category: z
     .string({ required_error: 'Categoria é obrigatória' })
     .trim()

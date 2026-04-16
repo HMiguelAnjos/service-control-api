@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { ServiceController } from '../adapters/controllers/service-controller';
 import { PrismaServiceRepository } from '../infrastructure/db/prisma-service-repository';
 import { PrismaExpenseRepository } from '../infrastructure/db/prisma-expense-repository';
-import { PrismaServiceProductRepository } from '../infrastructure/db/prisma-service-product-repository';
-import { PrismaProfitRepository } from '../infrastructure/db/prisma-profit-repository';
+import { PrismaInventoryRepository } from '../infrastructure/db/prisma-inventory-repository';
+import { PrismaProcedureTypeProductRepository } from '../infrastructure/db/prisma-procedure-type-product-repository';
 import { CreateServiceUseCase } from '../application/use-cases/service/create-service-use-case';
 import { DeleteServiceUseCase } from '../application/use-cases/service/delete-service-use-case';
 import { ListServicesUseCase } from '../application/use-cases/service/list-services-use-case';
@@ -17,13 +17,13 @@ const router = Router();
 
 const repo = new PrismaServiceRepository();
 const expenseRepo = new PrismaExpenseRepository();
-const serviceProductRepo = new PrismaServiceProductRepository();
-const profitRepo = new PrismaProfitRepository();
+const inventoryRepo = new PrismaInventoryRepository();
+const procedureTypeProductRepo = new PrismaProcedureTypeProductRepository();
 
-const createUseCase = new CreateServiceUseCase(repo, profitRepo);
+const createUseCase = new CreateServiceUseCase(repo, expenseRepo, inventoryRepo, procedureTypeProductRepo);
 const listUseCase = new ListServicesUseCase(repo);
-const updateUseCase = new UpdateServiceUseCase(repo, expenseRepo, profitRepo);
-const deleteUseCase = new DeleteServiceUseCase(repo, expenseRepo, serviceProductRepo, profitRepo);
+const updateUseCase = new UpdateServiceUseCase(repo);
+const deleteUseCase = new DeleteServiceUseCase(repo, expenseRepo);
 const listClientServicesUseCase = new ListClientServicesUseCase(repo);
 const controller = new ServiceController(createUseCase, listUseCase, updateUseCase, deleteUseCase, listClientServicesUseCase);
 

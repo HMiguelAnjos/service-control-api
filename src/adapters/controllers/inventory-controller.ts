@@ -3,6 +3,7 @@ import { CreateInventoryUseCase } from '../../application/use-cases/inventory/cr
 import { ListInventorysUseCase } from '../../application/use-cases/inventory/list-inventorys-use-case';
 import { UpdateInventoryUseCase } from '../../application/use-cases/inventory/update-inventory-use-case';
 import { DeleteInventoryUseCase } from '../../application/use-cases/inventory/delete-inventory-use-case';
+import { IInventoryRepository } from '../../application/ports/iinventory-repository';
 
 export class InventoryController {
   constructor(
@@ -10,6 +11,7 @@ export class InventoryController {
     private listUseCase: ListInventorysUseCase,
     private updateUseCase: UpdateInventoryUseCase,
     private deleteUseCase: DeleteInventoryUseCase,
+    private repo: IInventoryRepository,
   ) {}
 
   async create(req: Request, res: Response, next: NextFunction) {
@@ -35,7 +37,20 @@ export class InventoryController {
     try {
       const id = Number(req.params.id);
       const userId = req.user!.id;
-      await this.updateUseCase.execute({ ...req.body, id, userId });
+
+      // Busca o registro existente para preservar o productId
+      const existing = await this.repo.findOne(id, userId);
+      if (!existing) {
+        return res.status(404).json({ error: 'Registro de estoque não encontrado' });
+      }
+
+      await this.updateUseCase.execute({
+        id,
+        userId,
+        productId: existing.productId,
+        quantity: req.body.quantity,
+        purchasePrice: req.body.purchasePrice,
+      });
       return res.status(204).send();
     } catch (error) {
       next(error);

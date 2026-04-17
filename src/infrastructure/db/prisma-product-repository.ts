@@ -3,7 +3,7 @@ import { IProductRepository } from '../../application/ports/iproduct-repository'
 import prisma from './prisma';
 
 function toEntity(p: any): Product {
-  return new Product(p.id, p.userId, p.name, Number(p.unitCost), p.description ?? undefined);
+  return new Product(p.id, p.userId, p.name, Number(p.unitCost), p.description ?? undefined, p.createdAt);
 }
 
 export class PrismaProductRepository implements IProductRepository {

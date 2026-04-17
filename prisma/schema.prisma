@@ -155,7 +155,7 @@ model product {
 model inventory {
   id            Int       @id @default(autoincrement()) @map("id")
   productId     Int       @unique @map("product_id")
-  quantity      Int       @map("quantity")
+  quantity      Decimal   @map("quantity") @db.Decimal(10, 3)
   purchasePrice Decimal?  @map("purchase_price") @db.Decimal(10, 2)
   updatedAt     DateTime  @updatedAt @map("updated_at")
   createdAt     DateTime  @default(now()) @map("created_at")

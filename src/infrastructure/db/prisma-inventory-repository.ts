@@ -3,11 +3,11 @@ import { IInventoryRepository } from '../../application/ports/iinventory-reposit
 import prisma from './prisma';
 
 function toEntity(i: {
-  id: number; productId: number; quantity: number; purchasePrice: any;
+  id: number; productId: number; quantity: any; purchasePrice: any;
   createdAt: Date; updatedAt: Date; deletedAt: Date | null;
 }): Inventory {
   return new Inventory(
-    i.id, i.productId, i.quantity,
+    i.id, i.productId, Number(i.quantity),
     i.purchasePrice != null ? Number(i.purchasePrice) : undefined,
     i.createdAt, i.updatedAt, i.deletedAt,
   );
@@ -45,7 +45,7 @@ export class PrismaInventoryRepository implements IInventoryRepository {
   async deductQuantity(productId: number, quantity: number, userId: number): Promise<void> {
     const inv = await this.findByProductId(productId, userId);
     if (!inv || inv.id == null) return;
-    const newQty = Math.max(0, inv.quantity - Math.ceil(quantity));
+    const newQty = Math.max(0, Math.round((inv.quantity - quantity) * 1000) / 1000);
     await prisma.inventory.update({ where: { id: inv.id }, data: { quantity: newQty } });
   }
 

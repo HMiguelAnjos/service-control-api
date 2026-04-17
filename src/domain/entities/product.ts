@@ -5,6 +5,7 @@ export class Product {
     public readonly name: string,
     public readonly unitCost: number,
     public readonly description?: string,
+    public readonly createdAt?: Date,
   ) {}
 
   isValid(): boolean {

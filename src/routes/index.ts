@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authRoutes from './auth-routes';
 import clientRoutes from './client-routes';
+import clientPhotoRoutes from './client-photo-routes';
 import dashboardRoutes from './dashboard-routes';
 import expenseRoutes from './expense-routes';
 import inventoryRoutes from './inventory-routes';
@@ -14,6 +15,7 @@ const router = Router();
 
 router.use('/auth', authRoutes);
 router.use('/clients', clientRoutes);
+router.use('/clients/:clientId/photos', clientPhotoRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/expenses', expenseRoutes);
 router.use('/products', productRoutes);

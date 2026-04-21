@@ -9,13 +9,17 @@ import { errorHandler } from '../middlewares/errors/error-handlers';
 import routes from '../routes';
 import { logger } from '../middlewares/logger/logger';
 import { log } from '../config/logger';
+import path from 'path';
 
 dotenv.config();
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: process.env.CORS_ORIGIN ?? '*' }));
+
+// ── Static uploads ──────────────────────────────────────────
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,

@@ -36,10 +36,26 @@ model client {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  user     user      @relation(fields: [userId], references: [id])
+  user     user          @relation(fields: [userId], references: [id])
   services service[]
+  photos   client_photo[]
 
   @@map("client")
+}
+
+model client_photo {
+  id        Int       @id @default(autoincrement()) @map("id")
+  userId    Int       @map("user_id")
+  clientId  Int       @map("client_id")
+  filename  String    @map("filename")
+  takenAt   DateTime  @map("taken_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  client client @relation(fields: [clientId], references: [id])
+
+  @@map("client_photo")
 }
 
 model procedure_type {

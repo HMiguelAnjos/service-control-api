@@ -6,7 +6,8 @@
     "build": "tsc --build && tsc-alias",
     "start": "node dist/main/index.js",
     "dev": "npm run build && concurrently \"tsc --build --watch\" \"tsc-alias --watch\" \"nodemon -q dist/main/index.js\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "ts-node -e \"process.env.TS_NODE_COMPILER_OPTIONS='{\\\"module\\\":\\\"commonjs\\\"}';require('./prisma/seed.ts')\""
   },
   "keywords": [],
   "author": "",

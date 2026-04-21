@@ -8,6 +8,9 @@ export class User {
     public readonly updatedAt: Date = new Date(),
     public readonly resetToken: string | null = null,
     public readonly resetTokenExpires: Date | null = null,
+    public readonly role: string = 'user',
+    public readonly planId: number | null = null,
+    public readonly isActive: boolean = true,
   ) {}
 
   isValid(): boolean {

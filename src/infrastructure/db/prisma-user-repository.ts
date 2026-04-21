@@ -2,16 +2,7 @@ import { User } from '../../domain/entities/user';
 import { IUserRepository } from '../../application/ports/iuser-repository';
 import prisma from './prisma';
 
-function toUser(raw: {
-  id: number;
-  name: string;
-  email: string;
-  passwordHash: string;
-  createdAt: Date;
-  updatedAt: Date;
-  resetToken: string | null;
-  resetTokenExpires: Date | null;
-}): User {
+function toUser(raw: any): User {
   return new User(
     raw.id,
     raw.name,
@@ -21,6 +12,9 @@ function toUser(raw: {
     raw.updatedAt,
     raw.resetToken,
     raw.resetTokenExpires,
+    raw.role ?? 'user',
+    raw.planId ?? null,
+    raw.isActive ?? true,
   );
 }
 
@@ -66,5 +60,35 @@ export class PrismaUserRepository implements IUserRepository {
       where: { id },
       data: { passwordHash, resetToken: null, resetTokenExpires: null },
     });
+  }
+
+  // ── Admin methods ─────────────────────────────────────────
+
+  async findAll(): Promise<any[]> {
+    return prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        planId: true,
+        isActive: true,
+        createdAt: true,
+        plan: { select: { id: true, name: true, price: true, features: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async updatePlan(id: number, planId: number | null): Promise<void> {
+    await prisma.user.update({ where: { id }, data: { planId } });
+  }
+
+  async updateRole(id: number, role: string): Promise<void> {
+    await prisma.user.update({ where: { id }, data: { role } });
+  }
+
+  async updateActive(id: number, isActive: boolean): Promise<void> {
+    await prisma.user.update({ where: { id }, data: { isActive } });
   }
 }

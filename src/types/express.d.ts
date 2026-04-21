@@ -4,6 +4,9 @@ declare global {
       user?: {
         id: number;
         email: string;
+        role: string;
+        planId: number | null;
+        isActive: boolean;
       };
     }
   }

@@ -1,8 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { log } from '../../config/logger';
+import prisma from '../../infrastructure/db/prisma';
 
-export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+interface JwtPayload {
+  id: number;
+  email: string;
+  role: string;
+  planId: number | null;
+  isActive: boolean;
+}
+
+export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -19,8 +28,26 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
   }
 
   try {
-    const decoded = jwt.verify(token, secret) as { id: number; email: string };
-    req.user = { id: decoded.id, email: decoded.email };
+    const decoded = jwt.verify(token, secret) as JwtPayload;
+
+    // Always verify isActive from DB so disabling takes effect immediately
+    const dbUser = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { isActive: true, role: true, planId: true },
+    });
+
+    if (!dbUser || !dbUser.isActive) {
+      log.warn('Auth', `Conta desativada ou não encontrada: ${decoded.email}`);
+      return res.status(403).json({ error: 'Conta desativada. Entre em contato com o suporte.' });
+    }
+
+    req.user = {
+      id: decoded.id,
+      email: decoded.email,
+      role: dbUser.role,
+      planId: dbUser.planId,
+      isActive: dbUser.isActive,
+    };
     next();
   } catch (err) {
     log.warn('Auth', `Token inválido ou expirado → ${req.method} ${req.path} (${(err as Error).message})`);

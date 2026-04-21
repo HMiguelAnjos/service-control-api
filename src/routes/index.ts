@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import adminRoutes from './admin-routes';
 import authRoutes from './auth-routes';
 import clientRoutes from './client-routes';
 import clientPhotoRoutes from './client-photo-routes';
@@ -13,6 +14,7 @@ import serviceRoutes from './service-routes';
 
 const router = Router();
 
+router.use('/admin', adminRoutes);
 router.use('/auth', authRoutes);
 router.use('/clients', clientRoutes);
 router.use('/clients/:clientId/photos', clientPhotoRoutes);

@@ -31,6 +31,20 @@ export class ClientController {
     }
   }
 
+  async getOne(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = Number(req.params.id);
+      const userId = req.user!.id;
+      // reuse the repository directly via list use case's repo — simplest: find from list
+      const clients = await this.listUseCase.execute(userId);
+      const client = clients.find((c) => c.id === id);
+      if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
+      return res.json(client);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);

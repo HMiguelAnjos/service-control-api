@@ -28,6 +28,7 @@ router.use(authMiddleware);
 
 router.post('/', validate(createClientSchema), (req, res, next) => controller.create(req, res, next));
 router.get('/', (req, res, next) => controller.list(req, res, next));
+router.get('/:id', validateId, (req, res, next) => controller.getOne(req, res, next));
 router.get('/:id/services', validateId, async (req, res, next) => {
   try {
     const services = await listClientServicesUseCase.execute(Number(req.params.id), req.user!.id);

@@ -1,3 +1,5 @@
+import { UserRole } from '../enums';
+
 export class User {
   constructor(
     public readonly id: number | undefined,
@@ -8,7 +10,7 @@ export class User {
     public readonly updatedAt: Date = new Date(),
     public readonly resetToken: string | null = null,
     public readonly resetTokenExpires: Date | null = null,
-    public readonly role: string = 'user',
+    public readonly role: UserRole = UserRole.User,
     public readonly planId: number | null = null,
     public readonly isActive: boolean = true,
   ) {}

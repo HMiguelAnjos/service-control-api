@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { PrismaUserRepository } from '../../infrastructure/db/prisma-user-repository';
 import prisma from '../../infrastructure/db/prisma';
+import { UserRole } from '../../domain/enums';
 
 const userRepo = new PrismaUserRepository();
 
@@ -41,8 +42,8 @@ export class AdminController {
     try {
       const id = Number(req.params.id);
       const { role } = req.body as { role: string };
-      if (!['user', 'admin'].includes(role)) {
-        return res.status(400).json({ error: 'Role inválida. Use "user" ou "admin".' });
+      if (!Object.values(UserRole).includes(role as UserRole)) {
+        return res.status(400).json({ error: `Role inválida. Use: ${Object.values(UserRole).join(', ')}.` });
       }
       await userRepo.updateRole(id, role);
       return res.status(204).send();

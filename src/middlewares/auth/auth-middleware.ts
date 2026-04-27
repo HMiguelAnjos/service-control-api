@@ -2,11 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { log } from '../../config/logger';
 import prisma from '../../infrastructure/db/prisma';
+import { UserRole } from '../../domain/enums';
 
 interface JwtPayload {
   id: number;
   email: string;
-  role: string;
+  role: UserRole;
   planId: number | null;
   isActive: boolean;
 }

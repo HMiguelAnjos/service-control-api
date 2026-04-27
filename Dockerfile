@@ -42,8 +42,6 @@ RUN mkdir -p /app/uploads/client-photos \
 
 USER nodeuser
 
-VOLUME ["/app/uploads"]
-
 EXPOSE 3000
 
 # Aplica migrations pendentes e sobe o servidor

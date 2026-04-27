@@ -1,6 +1,6 @@
 /**
- * Roles disponíveis no sistema.
- * Para adicionar um novo role, basta incluir aqui e tratar nas rotas/middlewares.
+ * Available user roles in the system.
+ * To add a new role, add it here and handle it in the routes/middlewares.
  */
 export enum UserRole {
   User  = 'user',
@@ -8,11 +8,11 @@ export enum UserRole {
 }
 
 /**
- * Nomes dos planos cadastrados no banco via seed.
- * Para criar um novo plano, adicione o valor aqui e inclua no seed.ts.
+ * Plan names as stored in the database (seeded via prisma/seed.ts).
+ * To add a new plan, add it here and include it in seed.ts.
  */
 export enum PlanName {
-  Gratis        = 'Grátis',
-  Essencial     = 'Essencial',
-  Profissional  = 'Profissional',
+  Free         = 'Free',
+  Essential    = 'Essential',
+  Professional = 'Professional',
 }

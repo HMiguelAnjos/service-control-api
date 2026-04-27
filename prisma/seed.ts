@@ -6,8 +6,8 @@ const prisma = new PrismaClient();
 async function main() {
   const plans = [
     {
-      name: PlanName.Gratis,
-      description: 'Para começar a organizar seu negócio.',
+      name: PlanName.Free,
+      description: 'To start organizing your business.',
       price: 0,
       features: {
         maxClients: 10,
@@ -19,8 +19,8 @@ async function main() {
       },
     },
     {
-      name: PlanName.Essencial,
-      description: 'Para profissionais em crescimento.',
+      name: PlanName.Essential,
+      description: 'For growing professionals.',
       price: 49,
       features: {
         maxClients: 50,
@@ -32,8 +32,8 @@ async function main() {
       },
     },
     {
-      name: PlanName.Profissional,
-      description: 'Tudo ilimitado para seu negócio crescer sem barreiras.',
+      name: PlanName.Professional,
+      description: 'Unlimited everything for your business to grow without limits.',
       price: 99,
       features: {
         maxClients: null,
@@ -44,7 +44,7 @@ async function main() {
         reports: true,
       },
     },
-    // Para adicionar um novo plano no futuro, basta incluir aqui e no enum PlanName:
+    // To add a new plan in the future, add it here and in the PlanName enum:
     // {
     //   name: PlanName.Enterprise,
     //   description: '...',
@@ -53,13 +53,18 @@ async function main() {
     // },
   ];
 
+  // Remove outdated plans and recreate to keep the DB in sync
+  await prisma.plan.deleteMany({
+    where: { name: { notIn: Object.values(PlanName) } },
+  });
+
   for (const plan of plans) {
     await prisma.plan.upsert({
       where: { name: plan.name },
       update: { description: plan.description, price: plan.price, features: plan.features },
       create: plan,
     });
-    console.log(`✓ Plano "${plan.name}" criado/atualizado`);
+    console.log(`✓ Plan "${plan.name}" created/updated`);
   }
 }
 

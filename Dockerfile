@@ -44,5 +44,5 @@ USER nodeuser
 
 EXPOSE 3000
 
-# Aplica migrations pendentes e sobe o servidor
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main/index.js"]
+# Sincroniza o schema com o banco e sobe o servidor
+CMD ["sh", "-c", "npx prisma db push && node dist/main/index.js"]

@@ -8,9 +8,7 @@
     "resolveJsonModule": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "composite": true,
-    "declaration": true
+    "skipLibCheck": true
   },
   "ts-node": {
     "files": true

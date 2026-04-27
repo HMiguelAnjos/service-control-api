@@ -10,7 +10,7 @@ RUN npm ci
 
 COPY . .
 
-RUN npx prisma generate && npm run build
+RUN npx prisma generate && npx tsc
 
 # ─────────────────────────────────────────────
 # Estágio 2: produção (mínima)

@@ -41,7 +41,7 @@ app.use(logger);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 app.use('/api', routes);

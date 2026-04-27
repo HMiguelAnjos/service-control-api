@@ -13,8 +13,17 @@ import { ClientPhotoController } from '../adapters/controllers/client-photo-cont
 const router = Router({ mergeParams: true });
 
 // ── Multer storage ───────────────────────────────────────────
-const uploadDir = path.join(process.cwd(), 'uploads', 'client-photos');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+const uploadDir = process.env.UPLOAD_DIR
+  ? path.join(process.env.UPLOAD_DIR, 'client-photos')
+  : path.join(process.cwd(), 'uploads', 'client-photos');
+
+try {
+  fs.mkdirSync(uploadDir, { recursive: true });
+} catch (err: any) {
+  if (err.code !== 'EEXIST') {
+    console.error(`[upload] Não foi possível criar "${uploadDir}":`, err.message);
+  }
+}
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, uploadDir),

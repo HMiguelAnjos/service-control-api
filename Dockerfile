@@ -36,7 +36,13 @@ COPY --from=builder /app/dist                 ./dist
 
 RUN npx prisma generate
 
+# Cria diretório de uploads com permissão para o usuário não-root
+RUN mkdir -p /app/uploads/client-photos \
+ && chown -R nodeuser:nodejs /app/uploads
+
 USER nodeuser
+
+VOLUME ["/app/uploads"]
 
 EXPOSE 3000
 

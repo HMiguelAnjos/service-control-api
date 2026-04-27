@@ -19,7 +19,8 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: process.env.CORS_ORIGIN ?? '*' }));
 
 // ── Static uploads ──────────────────────────────────────────
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+const uploadsRoot = process.env.UPLOAD_DIR ?? path.join(process.cwd(), 'uploads');
+app.use('/uploads', express.static(uploadsRoot));
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,

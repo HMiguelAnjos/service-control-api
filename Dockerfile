@@ -34,4 +34,4 @@ USER nodeuser
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/main/index.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/seed.js && node dist/main/index.js"]

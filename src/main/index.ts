@@ -16,7 +16,12 @@ dotenv.config();
 const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors({ origin: process.env.CORS_ORIGIN ?? '*' }));
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
+app.options('*', cors());
 
 // ── Static uploads ──────────────────────────────────────────
 const uploadsRoot = process.env.UPLOAD_DIR ?? path.join(process.cwd(), 'uploads');
@@ -58,9 +63,9 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // ── Start ───────────────────────────────────────────────────
-const PORT = process.env.PORT ?? 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
-app.listen(PORT, () => {
+app.listen(Number(PORT), '0.0.0.0', () => {
   log.success('Server', `Rodando em http://localhost:${PORT}`);
   log.info('Server', `Ambiente: ${process.env.NODE_ENV ?? 'development'}`);
   log.info('Server', `Documentação: http://localhost:${PORT}/api-docs`);

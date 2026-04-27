@@ -8,9 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-COPY tsconfig.json ./
-COPY src ./src
-COPY prisma ./prisma
+COPY . .
 
 RUN npx prisma generate && npm run build
 

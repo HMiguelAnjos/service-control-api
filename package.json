@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc --build && tsc-alias",
+    "build": "tsc",
     "start": "node dist/main/index.js",
-    "dev": "npm run build && concurrently \"tsc --build --watch\" \"tsc-alias --watch\" \"nodemon -q dist/main/index.js\"",
+    "dev": "concurrently \"tsc --watch\" \"nodemon -q dist/main/index.js\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "ts-node -e \"process.env.TS_NODE_COMPILER_OPTIONS='{\\\"module\\\":\\\"commonjs\\\"}';require('./prisma/seed.ts')\""
   },

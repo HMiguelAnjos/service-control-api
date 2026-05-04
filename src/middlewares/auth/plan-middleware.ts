@@ -6,7 +6,7 @@ import { PlanFeatureRequiredError } from '../errors/errors';
  * Boolean plan features: caller passes the JSON key on `plan.features`
  * to gate (e.g. `photos`, `expenses`, `inventory`, `reports`).
  */
-export type PlanFeatureKey = 'photos' | 'expenses' | 'inventory' | 'reports';
+export type PlanFeatureKey = 'photos' | 'expenses' | 'inventory' | 'reports' | 'agenda';
 
 interface PlanFeatures {
   maxClients?: number | null;
@@ -15,6 +15,7 @@ interface PlanFeatures {
   expenses?: boolean;
   inventory?: boolean;
   reports?: boolean;
+  agenda?: boolean;
 }
 
 const DEFAULT_FEATURES: PlanFeatures = {
@@ -24,6 +25,7 @@ const DEFAULT_FEATURES: PlanFeatures = {
   expenses: false,
   inventory: false,
   reports: false,
+  agenda: false,
 };
 
 // Process-level cache: plan rows change rarely (admin only) and reading them

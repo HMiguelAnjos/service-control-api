@@ -63,3 +63,20 @@ export class PlanLimitExceededError extends DomainError {
     );
   }
 }
+
+export class AppointmentConflictError extends DomainError {
+  constructor(input: { conflictingId?: number; startTime: Date; endTime: Date; reason?: string }) {
+    super(
+      409,
+      'APPOINTMENT_CONFLICT',
+      input.reason ?? 'Já existe um compromisso nesse horário.',
+      input,
+    );
+  }
+}
+
+export class CalendarIntegrationError extends DomainError {
+  constructor(message: string, details?: Record<string, unknown>) {
+    super(502, 'CALENDAR_INTEGRATION_ERROR', message, details);
+  }
+}

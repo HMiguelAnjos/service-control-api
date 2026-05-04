@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import adminRoutes from './admin-routes';
 import authRoutes from './auth-routes';
+import availabilityRoutes from './availability-routes';
+import appointmentRoutes from './appointment-routes';
 import clientRoutes from './client-routes';
 import clientPhotoRoutes from './client-photo-routes';
 import dashboardRoutes from './dashboard-routes';
@@ -15,7 +17,9 @@ import serviceRoutes from './service-routes';
 const router = Router();
 
 router.use('/admin', adminRoutes);
+router.use('/appointments', appointmentRoutes);
 router.use('/auth', authRoutes);
+router.use('/availability', availabilityRoutes);
 router.use('/clients', clientRoutes);
 router.use('/clients/:clientId/photos', clientPhotoRoutes);
 router.use('/dashboard', dashboardRoutes);

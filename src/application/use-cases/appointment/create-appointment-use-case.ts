@@ -1,6 +1,7 @@
 import { Appointment, AppointmentStatus, isAppointmentStatus } from '../../../domain/entities/appointment';
 import { IAppointmentRepository } from '../../ports/iappointment-repository';
 import { IBlockedTimeRepository } from '../../ports/iblocked-time-repository';
+import { AppointmentGoogleSync } from '../../services/appointment-google-sync';
 import {
   AppointmentConflictError,
   ValidationError,
@@ -14,12 +15,15 @@ export interface CreateAppointmentInput {
   endTime: Date;
   status?: AppointmentStatus;
   notes?: string | null;
+  /** Pre-computed summary string for Google Calendar (e.g. "Maria — Corte"). */
+  summary?: string;
 }
 
 export class CreateAppointmentUseCase {
   constructor(
     private appointments: IAppointmentRepository,
     private blockedTimes: IBlockedTimeRepository,
+    private googleSync?: AppointmentGoogleSync,
   ) {}
 
   async execute(input: CreateAppointmentInput): Promise<Appointment> {
@@ -65,6 +69,10 @@ export class CreateAppointmentUseCase {
       });
     }
 
-    return this.appointments.create(entity);
+    const created = await this.appointments.create(entity);
+    if (this.googleSync) {
+      await this.googleSync.onCreated(created, input.summary ?? 'Atendimento');
+    }
+    return created;
   }
 }

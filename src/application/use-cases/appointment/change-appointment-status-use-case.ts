@@ -1,9 +1,13 @@
 import { Appointment, AppointmentStatus, isAppointmentStatus } from '../../../domain/entities/appointment';
 import { IAppointmentRepository } from '../../ports/iappointment-repository';
+import { AppointmentGoogleSync } from '../../services/appointment-google-sync';
 import { NotFoundError, ValidationError } from '../../../middlewares/errors/errors';
 
 export class ChangeAppointmentStatusUseCase {
-  constructor(private repo: IAppointmentRepository) {}
+  constructor(
+    private repo: IAppointmentRepository,
+    private googleSync?: AppointmentGoogleSync,
+  ) {}
 
   async execute(id: number, userId: number, status: AppointmentStatus, cancelReason?: string): Promise<Appointment> {
     if (!isAppointmentStatus(status)) {
@@ -19,6 +23,11 @@ export class ChangeAppointmentStatusUseCase {
       patch.cancelReason = cancelReason ?? null;
     }
 
-    return this.repo.update(id, userId, patch);
+    const updated = await this.repo.update(id, userId, patch);
+
+    if (this.googleSync && status === 'canceled') {
+      await this.googleSync.onCanceled(updated);
+    }
+    return updated;
   }
 }

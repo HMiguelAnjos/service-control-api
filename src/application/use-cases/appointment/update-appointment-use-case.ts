@@ -1,6 +1,7 @@
 import { Appointment, AppointmentStatus, isAppointmentStatus } from '../../../domain/entities/appointment';
 import { IAppointmentRepository, UpdateAppointmentInput } from '../../ports/iappointment-repository';
 import { IBlockedTimeRepository } from '../../ports/iblocked-time-repository';
+import { AppointmentGoogleSync } from '../../services/appointment-google-sync';
 import {
   AppointmentConflictError,
   NotFoundError,
@@ -16,12 +17,14 @@ export interface UpdateAppointmentExecuteInput {
   endTime?: Date;
   status?: AppointmentStatus;
   notes?: string | null;
+  summary?: string;
 }
 
 export class UpdateAppointmentUseCase {
   constructor(
     private appointments: IAppointmentRepository,
     private blockedTimes: IBlockedTimeRepository,
+    private googleSync?: AppointmentGoogleSync,
   ) {}
 
   async execute(input: UpdateAppointmentExecuteInput): Promise<Appointment> {
@@ -75,6 +78,16 @@ export class UpdateAppointmentUseCase {
       notes: input.notes,
     };
 
-    return this.appointments.update(input.id, input.userId, patch);
+    const updated = await this.appointments.update(input.id, input.userId, patch);
+
+    if (this.googleSync) {
+      // If the appointment was just canceled here, push a delete; otherwise update.
+      if (input.status === 'canceled') {
+        await this.googleSync.onCanceled(updated);
+      } else {
+        await this.googleSync.onUpdated(updated, input.summary ?? 'Atendimento');
+      }
+    }
+    return updated;
   }
 }

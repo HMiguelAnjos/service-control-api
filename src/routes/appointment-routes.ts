@@ -6,6 +6,8 @@ import { validateId } from '../middlewares/validation/validate';
 import { PrismaAppointmentRepository } from '../infrastructure/db/prisma-appointment-repository';
 import { PrismaAvailabilityRepository } from '../infrastructure/db/prisma-availability-repository';
 import { PrismaBlockedTimeRepository } from '../infrastructure/db/prisma-blocked-time-repository';
+import { PrismaCalendarIntegrationRepository } from '../infrastructure/db/prisma-calendar-integration-repository';
+import { GoogleCalendarProvider } from '../infrastructure/calendar/google-calendar-provider';
 
 import { CreateAppointmentUseCase } from '../application/use-cases/appointment/create-appointment-use-case';
 import { ListAppointmentsUseCase } from '../application/use-cases/appointment/list-appointments-use-case';
@@ -14,6 +16,7 @@ import { UpdateAppointmentUseCase } from '../application/use-cases/appointment/u
 import { ChangeAppointmentStatusUseCase } from '../application/use-cases/appointment/change-appointment-status-use-case';
 import { CancelAppointmentUseCase } from '../application/use-cases/appointment/cancel-appointment-use-case';
 import { ListAvailableSlotsUseCase } from '../application/use-cases/appointment/list-available-slots-use-case';
+import { AppointmentGoogleSync } from '../application/services/appointment-google-sync';
 
 import { AppointmentController } from '../adapters/controllers/appointment-controller';
 
@@ -22,13 +25,16 @@ const router = Router();
 const apptRepo = new PrismaAppointmentRepository();
 const blockedRepo = new PrismaBlockedTimeRepository();
 const availabilityRepo = new PrismaAvailabilityRepository();
+const integrationRepo = new PrismaCalendarIntegrationRepository();
+const googleProvider = new GoogleCalendarProvider();
+const googleSync = new AppointmentGoogleSync(googleProvider, integrationRepo, apptRepo);
 
-const createUC = new CreateAppointmentUseCase(apptRepo, blockedRepo);
+const createUC = new CreateAppointmentUseCase(apptRepo, blockedRepo, googleSync);
 const listUC = new ListAppointmentsUseCase(apptRepo);
 const getUC = new GetAppointmentUseCase(apptRepo);
-const updateUC = new UpdateAppointmentUseCase(apptRepo, blockedRepo);
-const changeStatusUC = new ChangeAppointmentStatusUseCase(apptRepo);
-const cancelUC = new CancelAppointmentUseCase(apptRepo);
+const updateUC = new UpdateAppointmentUseCase(apptRepo, blockedRepo, googleSync);
+const changeStatusUC = new ChangeAppointmentStatusUseCase(apptRepo, googleSync);
+const cancelUC = new CancelAppointmentUseCase(apptRepo, googleSync);
 const slotsUC = new ListAvailableSlotsUseCase(apptRepo, availabilityRepo, blockedRepo);
 
 const controller = new AppointmentController(

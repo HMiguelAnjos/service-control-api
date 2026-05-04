@@ -7,4 +7,5 @@ export interface IUserRepository {
   findByResetToken(token: string): Promise<User | null>;
   updateResetToken(id: number, token: string | null, expires: Date | null): Promise<void>;
   updatePassword(id: number, passwordHash: string): Promise<void>;
+  findPlanIdByName(name: string): Promise<number | null>;
 }

@@ -66,6 +66,16 @@ async function main() {
     });
     console.log(`✓ Plan "${plan.name}" created/updated`);
   }
+
+  // Backfill: assign Professional plan to any user registered before default-plan logic was added
+  const professional = await prisma.plan.findUnique({ where: { name: PlanName.Professional } });
+  if (professional) {
+    const { count } = await prisma.user.updateMany({
+      where: { planId: null },
+      data: { planId: professional.id },
+    });
+    if (count > 0) console.log(`✓ Assigned Professional plan to ${count} existing user(s) with no plan`);
+  }
 }
 
 main()

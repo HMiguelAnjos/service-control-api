@@ -25,9 +25,15 @@ export class PrismaUserRepository implements IUserRepository {
         name: user.name,
         email: user.email,
         passwordHash: user.passwordHash,
+        ...(user.planId != null ? { planId: user.planId } : {}),
       },
     });
     return toUser(raw);
+  }
+
+  async findPlanIdByName(name: string): Promise<number | null> {
+    const plan = await prisma.plan.findUnique({ where: { name }, select: { id: true } });
+    return plan?.id ?? null;
   }
 
   async findByEmail(email: string): Promise<User | null> {

@@ -1,5 +1,6 @@
 import { Expense } from '../../domain/entities/expense';
 import { IExpenseRepository } from '../../application/ports/iexpense-repository';
+import { Page, PaginationParams, buildPage } from '../../application/utils/pagination';
 import prisma from './prisma';
 
 function toEntity(e: any): Expense {
@@ -20,8 +21,24 @@ export class PrismaExpenseRepository implements IExpenseRepository {
   }
 
   async findAll(userId: number): Promise<Expense[]> {
-    const rows = await prisma.expense.findMany({ where: { userId, deletedAt: null } });
+    const rows = await prisma.expense.findMany({
+      where: { userId, deletedAt: null },
+      orderBy: { id: 'desc' },
+    });
     return rows.map(toEntity);
+  }
+
+  async findPage(userId: number, params: PaginationParams): Promise<Page<Expense>> {
+    const rows = await prisma.expense.findMany({
+      where: {
+        userId,
+        deletedAt: null,
+        ...(params.cursor ? { id: { lt: params.cursor } } : {}),
+      },
+      orderBy: { id: 'desc' },
+      take: params.limit + 1,
+    });
+    return buildPage(rows, params.limit, (r) => r.id, toEntity);
   }
 
   async findOne(id: number, userId: number): Promise<Expense | null> {

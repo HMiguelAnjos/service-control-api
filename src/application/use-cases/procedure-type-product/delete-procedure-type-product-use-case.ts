@@ -1,7 +1,7 @@
 import { IProcedureTypeProductRepository } from '../../ports/iprocedure-type-product-repository';
 import { IProcedureTypeRepository } from '../../ports/iprocedure-type-repository';
 import { ProcedureType } from '../../../domain/entities/procedure-type';
-import { BadRequest } from '../../../middlewares/errors/bad-request';
+import { NotFoundError } from '../../../middlewares/errors/errors';
 
 export class DeleteProcedureTypeProductUseCase {
   constructor(
@@ -12,7 +12,7 @@ export class DeleteProcedureTypeProductUseCase {
   async execute(id: number, procedureTypeId: number, userId: number) {
     const procedureType = await this.procedureTypeRepo.findOne(procedureTypeId, userId);
     if (!procedureType) {
-      throw new BadRequest(404, 'Tipo de procedimento não encontrado');
+      throw new NotFoundError('Tipo de procedimento');
     }
 
     await this.repo.delete(id, userId);

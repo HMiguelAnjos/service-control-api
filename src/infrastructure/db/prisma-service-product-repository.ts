@@ -2,6 +2,10 @@ import { ServiceProduct } from '../../domain/entities/service-product';
 import { IServiceProductRepository } from '../../application/ports/iservice-product-repository';
 import prisma from './prisma';
 
+function toEntity(sp: { id: number; serviceId: number; productId: number; quantity: any }): ServiceProduct {
+  return new ServiceProduct(sp.id, sp.serviceId, sp.productId, Number(sp.quantity));
+}
+
 export class PrismaServiceProductRepository implements IServiceProductRepository {
   async create(serviceProduct: ServiceProduct): Promise<void> {
     await prisma.service_product.create({
@@ -17,7 +21,7 @@ export class PrismaServiceProductRepository implements IServiceProductRepository
     const raw = await prisma.service_product.findMany({
       where: { deletedAt: null, service: { userId, deletedAt: null } },
     });
-    return raw.map((sp) => new ServiceProduct(sp.id, sp.serviceId, sp.productId, sp.quantity));
+    return raw.map(toEntity);
   }
 
   async findOne(id: number, userId: number): Promise<ServiceProduct | null> {
@@ -25,7 +29,7 @@ export class PrismaServiceProductRepository implements IServiceProductRepository
       where: { id, deletedAt: null, service: { userId } },
     });
     if (!sp) return null;
-    return new ServiceProduct(sp.id, sp.serviceId, sp.productId, sp.quantity);
+    return toEntity(sp);
   }
 
   async update(serviceProduct: ServiceProduct, userId: number): Promise<void> {

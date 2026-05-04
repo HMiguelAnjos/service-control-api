@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { IUserRepository } from '../../ports/iuser-repository';
-import { BadRequest } from '../../../middlewares/errors/bad-request';
+import { ForbiddenError, UnauthorizedError } from '../../../middlewares/errors/errors';
 import { log } from '../../../config/logger';
 import prisma from '../../../infrastructure/db/prisma';
 
@@ -12,18 +12,18 @@ export class LoginUseCase {
     const user = await this.repo.findByEmail(input.email);
     if (!user) {
       log.warn('Login', `Tentativa com e-mail não cadastrado: ${input.email}`);
-      throw new BadRequest(401, 'E-mail ou senha inválidos');
+      throw new UnauthorizedError('E-mail ou senha inválidos');
     }
 
     if (!user.isActive) {
       log.warn('Login', `Tentativa de login em conta desativada: ${input.email}`);
-      throw new BadRequest(403, 'Conta desativada. Entre em contato com o suporte.');
+      throw new ForbiddenError('Conta desativada. Entre em contato com o suporte.');
     }
 
     const passwordMatch = await bcrypt.compare(input.password, user.passwordHash);
     if (!passwordMatch) {
       log.warn('Login', `Senha incorreta para: ${input.email}`);
-      throw new BadRequest(401, 'E-mail ou senha inválidos');
+      throw new UnauthorizedError('E-mail ou senha inválidos');
     }
 
     const secret = process.env.JWT_SECRET;

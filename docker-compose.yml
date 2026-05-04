@@ -23,12 +23,17 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       PORT: 3000
       DATABASE_URL: postgresql://henrique:12345@db:5432/service-control
       JWT_SECRET: supersecretkey
       JWT_EXPIRES_IN: 7d
       CORS_ORIGIN: "*"
+    volumes:
+      # Mantém fotos legadas (anteriores ao R2) acessíveis entre rebuilds
+      - api_uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -36,3 +41,4 @@ services:
 
 volumes:
   postgres_data:
+  api_uploads:

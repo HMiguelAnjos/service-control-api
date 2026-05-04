@@ -19,4 +19,7 @@ router.put('/users/:id/plan', validateId, (req, res, next) => controller.updateU
 router.put('/users/:id/role', validateId, (req, res, next) => controller.updateUserRole(req, res, next));
 router.put('/users/:id/active', validateId, (req, res, next) => controller.updateUserActive(req, res, next));
 
+// ── Maintenance ────────────────────────────────────────────
+router.post('/maintenance/cleanup-photos', (req, res, next) => controller.cleanupPhotos(req, res, next));
+
 export default router;

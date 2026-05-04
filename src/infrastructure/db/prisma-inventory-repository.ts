@@ -1,6 +1,7 @@
 import { Inventory } from '../../domain/entities/inventory';
 import { IInventoryRepository } from '../../application/ports/iinventory-repository';
 import prisma from './prisma';
+import { InsufficientStockError } from '../../middlewares/errors/errors';
 
 function toEntity(i: {
   id: number; productId: number; quantity: any; purchasePrice: any;
@@ -43,9 +44,24 @@ export class PrismaInventoryRepository implements IInventoryRepository {
   }
 
   async deductQuantity(productId: number, quantity: number, userId: number): Promise<void> {
-    const inv = await this.findByProductId(productId, userId);
-    if (!inv || inv.id == null) return;
-    const newQty = Math.max(0, Math.round((inv.quantity - quantity) * 1000) / 1000);
+    const inv = await prisma.inventory.findFirst({
+      where: { productId, deletedAt: null, product: { userId } },
+      include: { product: { select: { name: true } } },
+    });
+    // Silently skip if there's no inventory record at all — product was never stocked.
+    if (!inv) return;
+
+    const available = Number(inv.quantity);
+    if (available < quantity) {
+      throw new InsufficientStockError({
+        productId,
+        productName: inv.product?.name,
+        requested: quantity,
+        available,
+      });
+    }
+
+    const newQty = Math.round((available - quantity) * 1000) / 1000;
     await prisma.inventory.update({ where: { id: inv.id }, data: { quantity: newQty } });
   }
 

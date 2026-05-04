@@ -3,6 +3,9 @@ import { CreateClientUseCase } from '../../application/use-cases/client/create-c
 import { ListClientsUseCase } from '../../application/use-cases/client/list-clients-use-case';
 import { UpdateClientUseCase } from '../../application/use-cases/client/update-client-use-case';
 import { DeleteClientUseCase } from '../../application/use-cases/client/delete-client-use-case';
+import { IClientRepository } from '../../application/ports/iclient-repository';
+import { isPaginatedRequest, parsePagination } from '../../application/utils/pagination';
+import { NotFoundError } from '../../middlewares/errors/errors';
 
 export class ClientController {
   constructor(
@@ -10,6 +13,7 @@ export class ClientController {
     private listUseCase: ListClientsUseCase,
     private updateUseCase: UpdateClientUseCase,
     private deleteUseCase: DeleteClientUseCase,
+    private repo: IClientRepository,
   ) {}
 
   async create(req: Request, res: Response, next: NextFunction) {
@@ -24,7 +28,15 @@ export class ClientController {
 
   async list(req: Request, res: Response, next: NextFunction) {
     try {
-      const clients = await this.listUseCase.execute(req.user!.id);
+      const userId = req.user!.id;
+      if (isPaginatedRequest(req.query)) {
+        const page = await this.listUseCase.executePaginated(
+          userId,
+          parsePagination(req.query),
+        );
+        return res.json(page);
+      }
+      const clients = await this.listUseCase.execute(userId);
       return res.json(clients);
     } catch (error) {
       next(error);
@@ -35,10 +47,8 @@ export class ClientController {
     try {
       const id = Number(req.params.id);
       const userId = req.user!.id;
-      // reuse the repository directly via list use case's repo — simplest: find from list
-      const clients = await this.listUseCase.execute(userId);
-      const client = clients.find((c) => c.id === id);
-      if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
+      const client = await this.repo.findOne(id, userId);
+      if (!client) throw new NotFoundError('Cliente');
       return res.json(client);
     } catch (error) {
       next(error);

@@ -1,9 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { PrismaUserRepository } from '../../infrastructure/db/prisma-user-repository';
+import { PrismaClientPhotoRepository } from '../../infrastructure/db/prisma-client-photo-repository';
+import { CleanupDeletedPhotosUseCase } from '../../application/use-cases/client-photo/cleanup-deleted-photos-use-case';
+import { getStorageService } from '../../infrastructure/storage/storage-factory';
 import prisma from '../../infrastructure/db/prisma';
 import { UserRole } from '../../domain/enums';
 
 const userRepo = new PrismaUserRepository();
+const photoRepo = new PrismaClientPhotoRepository();
+const cleanupPhotosUseCase = new CleanupDeletedPhotosUseCase(photoRepo, getStorageService());
 
 export class AdminController {
   async listUsers(_req: Request, res: Response, next: NextFunction) {
@@ -58,6 +63,18 @@ export class AdminController {
       const { isActive } = req.body as { isActive: boolean };
       await userRepo.updateActive(id, !!isActive);
       return res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async cleanupPhotos(req: Request, res: Response, next: NextFunction) {
+    try {
+      const days = req.body?.retentionDays ? Number(req.body.retentionDays) : undefined;
+      const result = await cleanupPhotosUseCase.execute(
+        days && Number.isFinite(days) && days >= 0 ? days : undefined,
+      );
+      return res.json(result);
     } catch (error) {
       next(error);
     }

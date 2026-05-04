@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../../../domain/entities/user';
 import { IUserRepository } from '../../ports/iuser-repository';
-import { BadRequest } from '../../../middlewares/errors/bad-request';
+import { ConflictError, ValidationError } from '../../../middlewares/errors/errors';
 import { log } from '../../../config/logger';
 
 export class RegisterUseCase {
@@ -12,7 +12,7 @@ export class RegisterUseCase {
     const existing = await this.repo.findByEmail(input.email);
     if (existing) {
       log.warn('Register', `Tentativa de cadastro com e-mail já existente: ${input.email}`);
-      throw new BadRequest(409, 'E-mail já cadastrado');
+      throw new ConflictError('E-mail já cadastrado', { field: 'email' });
     }
 
     const passwordHash = await bcrypt.hash(input.password, 10);
@@ -20,7 +20,7 @@ export class RegisterUseCase {
 
     if (!entity.isValid()) {
       log.warn('Register', `Dados inválidos para cadastro: ${input.email}`);
-      throw new BadRequest(400, 'Dados de cadastro inválidos');
+      throw new ValidationError('Dados de cadastro inválidos');
     }
 
     const created = await this.repo.create(entity);

@@ -1,6 +1,11 @@
 import { Client } from '../../domain/entities/client';
 import { IClientRepository } from '../../application/ports/iclient-repository';
+import { Page, PaginationParams, buildPage } from '../../application/utils/pagination';
 import prisma from './prisma';
+
+function toEntity(c: { id: number; userId: number; name: string; phone: string | null; email: string | null }): Client {
+  return new Client(c.id, c.userId, c.name, c.phone ?? undefined, c.email ?? undefined);
+}
 
 export class PrismaClientRepository implements IClientRepository {
   async create(client: Client): Promise<void> {
@@ -17,18 +22,29 @@ export class PrismaClientRepository implements IClientRepository {
   async findAll(userId: number): Promise<Client[]> {
     const rawClients = await prisma.client.findMany({
       where: { userId, deletedAt: null },
+      orderBy: { id: 'desc' },
     });
-    return rawClients.map(
-      (c) => new Client(c.id, c.userId, c.name, c.phone ?? undefined, c.email ?? undefined),
-    );
+    return rawClients.map(toEntity);
+  }
+
+  async findPage(userId: number, params: PaginationParams): Promise<Page<Client>> {
+    const rows = await prisma.client.findMany({
+      where: {
+        userId,
+        deletedAt: null,
+        ...(params.cursor ? { id: { lt: params.cursor } } : {}),
+      },
+      orderBy: { id: 'desc' },
+      take: params.limit + 1,
+    });
+    return buildPage(rows, params.limit, (r) => r.id, toEntity);
   }
 
   async findOne(id: number, userId: number): Promise<Client | null> {
     const raw = await prisma.client.findFirst({
       where: { id, userId, deletedAt: null },
     });
-    if (!raw) return null;
-    return new Client(raw.id, raw.userId, raw.name, raw.phone ?? undefined, raw.email ?? undefined);
+    return raw ? toEntity(raw) : null;
   }
 
   async update(client: Client): Promise<void> {

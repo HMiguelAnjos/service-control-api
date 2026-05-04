@@ -4,6 +4,7 @@ import { ListServicesUseCase } from '../../application/use-cases/service/list-se
 import { UpdateServiceUseCase } from '../../application/use-cases/service/update-service-use-case';
 import { DeleteServiceUseCase } from '../../application/use-cases/service/delete-service-use-case';
 import { ListClientServicesUseCase } from '../../application/use-cases/service/list-client-services-use-case';
+import { isPaginatedRequest, parsePagination } from '../../application/utils/pagination';
 
 export class ServiceController {
   constructor(
@@ -26,7 +27,15 @@ export class ServiceController {
 
   async list(req: Request, res: Response, next: NextFunction) {
     try {
-      const services = await this.listUseCase.execute(req.user!.id);
+      const userId = req.user!.id;
+      if (isPaginatedRequest(req.query)) {
+        const page = await this.listUseCase.executePaginated(
+          userId,
+          parsePagination(req.query),
+        );
+        return res.json(page);
+      }
+      const services = await this.listUseCase.execute(userId);
       return res.json(services);
     } catch (error) {
       next(error);

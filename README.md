@@ -339,11 +339,21 @@ Authorization: Bearer <token>
 
 | Método | Rota | Descrição |
 |--------|------|-----------|
-| `GET` | `/api/clients/:clientId/photos` | Lista fotos do cliente |
-| `POST` | `/api/clients/:clientId/photos` | Upload de foto (`multipart/form-data`, campo `photo`; body: `takenAt` opcional) |
-| `DELETE` | `/api/clients/:clientId/photos/:id` | Remove foto (apaga arquivo do disco + soft delete) |
+| `GET` | `/api/clients/:clientId/photos` | Lista fotos do cliente — retorna URLs assinadas (presigned) com TTL de 1h |
+| `POST` | `/api/clients/:clientId/photos` | Upload de foto (`multipart/form-data`, campo `photo`; body: `takenAt`, `tag` (`before`/`after`/`reference`/`progress`/`other`), `notes`) |
+| `PATCH` | `/api/clients/:clientId/photos/:id` | Atualiza `tag`, `notes` ou `takenAt` |
+| `DELETE` | `/api/clients/:clientId/photos/:id` | Soft-delete + remove do storage |
+| `POST` | `/api/admin/maintenance/cleanup-photos` | Hard-delete de fotos soft-deletadas há mais de N dias (`retentionDays`, padrão 30). Admin only. |
 
-Fotos servidas estaticamente em: `GET /uploads/client-photos/<filename>`
+#### Storage
+
+- **Em produção**: Cloudflare R2 (S3-compatível, 10 GB grátis, **sem custo de saída**). Configure as variáveis `R2_*` em `.env`. As fotos não ficam públicas — o backend gera URLs assinadas com expiração.
+- **Em desenvolvimento**: se as variáveis R2 não estiverem definidas, o backend usa disco local (`UPLOAD_DIR`) e serve em `GET /uploads/clients/:userId/:clientId/<id>.jpg`.
+- **Pipeline de upload**:
+  1. Compressão client-side via `browser-image-compression` (4 MB → ~400 KB).
+  2. `sharp` no servidor gera duas versões: original (1600px, q=82) e thumbnail (400×400, q=75).
+  3. Ambas vão pro storage; metadados (tag, dimensões, mime, tamanho) ficam em `client_photo`.
+- **Custo estimado**: 500 clientes × 20 fotos × 400 KB ≈ 4 GB → **grátis** no plano free do R2.
 
 ### Atendimentos
 

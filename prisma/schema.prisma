@@ -59,6 +59,7 @@ model client {
   services service[]
   photos   client_photo[]
 
+  @@index([userId, deletedAt])
   @@map("client")
 }
 
@@ -66,14 +67,33 @@ model client_photo {
   id        Int       @id @default(autoincrement()) @map("id")
   userId    Int       @map("user_id")
   clientId  Int       @map("client_id")
-  filename  String    @map("filename")
+
+  // Object storage (R2/S3 or local)
+  bucketKey String?   @map("bucket_key")
+  thumbKey  String?   @map("thumb_key")
+
+  // Legacy disk uploads — kept so old records keep displaying
+  filename  String?   @map("filename")
+
+  // Metadata
+  mimeType  String?   @map("mime_type")
+  sizeBytes Int?      @map("size_bytes")
+  width     Int?      @map("width")
+  height    Int?      @map("height")
+
+  // Domain
+  tag       String?   @map("tag")
+  notes     String?   @map("notes")
   takenAt   DateTime  @map("taken_at")
+
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
   client client @relation(fields: [clientId], references: [id])
 
+  @@index([clientId, deletedAt])
+  @@index([userId, deletedAt])
   @@map("client_photo")
 }
 
@@ -92,6 +112,7 @@ model procedure_type {
   service_procedures service_procedure[]
   products           procedure_type_product[]
 
+  @@index([userId, deletedAt])
   @@map("procedure_type")
 }
 
@@ -110,6 +131,7 @@ model procedure_type_product {
   product       product        @relation(fields: [productId], references: [id])
 
   @@unique([procedureTypeId, productId])
+  @@index([productId, deletedAt])
   @@map("procedure_type_product")
 }
 
@@ -132,6 +154,9 @@ model service {
   profit           profit?
   service_products service_product[]
 
+  @@index([userId, deletedAt])
+  @@index([clientId, deletedAt])
+  @@index([userId, date])
   @@map("service")
 }
 
@@ -148,6 +173,8 @@ model service_procedure {
   service       service        @relation(fields: [serviceId], references: [id])
   procedureType procedure_type @relation(fields: [procedureTypeId], references: [id])
 
+  @@index([serviceId])
+  @@index([procedureTypeId])
   @@map("service_procedure")
 }
 
@@ -166,6 +193,9 @@ model expense {
   user    user     @relation(fields: [userId], references: [id])
   service service? @relation(fields: [serviceId], references: [id])
 
+  @@index([userId, deletedAt])
+  @@index([serviceId, deletedAt])
+  @@index([userId, createdAt])
   @@map("expense")
 }
 
@@ -184,6 +214,7 @@ model product {
   usedIn            service_product[]
   procedure_types   procedure_type_product[]
 
+  @@index([userId, deletedAt])
   @@map("product")
 }
 
@@ -205,7 +236,7 @@ model service_product {
   id        Int       @id @default(autoincrement()) @map("id")
   serviceId Int       @map("service_id")
   productId Int       @map("product_id")
-  quantity  Int       @map("quantity")
+  quantity  Decimal   @map("quantity") @db.Decimal(10, 3)
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -213,6 +244,8 @@ model service_product {
   service service @relation(fields: [serviceId], references: [id])
   product product @relation(fields: [productId], references: [id])
 
+  @@index([serviceId, deletedAt])
+  @@index([productId, deletedAt])
   @@map("service_product")
 }
 

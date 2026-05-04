@@ -20,7 +20,7 @@ const createUseCase = new CreateClientUseCase(repo);
 const listUseCase = new ListClientsUseCase(repo);
 const updateUseCase = new UpdateClientUseCase(repo);
 const deleteUseCase = new DeleteClientUseCase(repo);
-const controller = new ClientController(createUseCase, listUseCase, updateUseCase, deleteUseCase);
+const controller = new ClientController(createUseCase, listUseCase, updateUseCase, deleteUseCase, repo);
 
 const listClientServicesUseCase = new ListClientServicesUseCase(serviceRepo);
 

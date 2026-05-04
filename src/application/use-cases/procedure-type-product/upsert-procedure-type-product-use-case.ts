@@ -2,7 +2,7 @@ import { ProcedureTypeProduct } from '../../../domain/entities/procedure-type-pr
 import { IProcedureTypeProductRepository } from '../../ports/iprocedure-type-product-repository';
 import { IProcedureTypeRepository } from '../../ports/iprocedure-type-repository';
 import { ProcedureType } from '../../../domain/entities/procedure-type';
-import { BadRequest } from '../../../middlewares/errors/bad-request';
+import { NotFoundError, ValidationError } from '../../../middlewares/errors/errors';
 
 export class UpsertProcedureTypeProductUseCase {
   constructor(
@@ -18,12 +18,12 @@ export class UpsertProcedureTypeProductUseCase {
   }) {
     const procedureType = await this.procedureTypeRepo.findOne(input.procedureTypeId, input.userId);
     if (!procedureType) {
-      throw new BadRequest(404, 'Tipo de procedimento não encontrado');
+      throw new NotFoundError('Tipo de procedimento');
     }
 
     const item = new ProcedureTypeProduct(undefined, input.procedureTypeId, input.productId, input.quantity);
     if (!item.isValid()) {
-      throw new BadRequest(400, 'Dados inválidos');
+      throw new ValidationError('Dados inválidos');
     }
 
     await this.repo.upsert(item);

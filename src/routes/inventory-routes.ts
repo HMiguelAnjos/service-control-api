@@ -6,6 +6,7 @@ import { DeleteInventoryUseCase } from '../application/use-cases/inventory/delet
 import { ListInventorysUseCase } from '../application/use-cases/inventory/list-inventorys-use-case';
 import { UpdateInventoryUseCase } from '../application/use-cases/inventory/update-inventory-use-case';
 import { authMiddleware } from '../middlewares/auth/auth-middleware';
+import { requirePlanFeature } from '../middlewares/auth/plan-middleware';
 import { validate, validateId } from '../middlewares/validation/validate';
 import { createInventorySchema, updateInventorySchema } from '../middlewares/validation/schemas/inventory-schemas';
 
@@ -19,6 +20,7 @@ const deleteUseCase = new DeleteInventoryUseCase(repo);
 const controller = new InventoryController(createUseCase, listUseCase, updateUseCase, deleteUseCase, repo);
 
 router.use(authMiddleware);
+router.use(requirePlanFeature('inventory'));
 
 router.post('/', validate(createInventorySchema), (req, res, next) => controller.create(req, res, next));
 router.get('/', (req, res, next) => controller.list(req, res, next));

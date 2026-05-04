@@ -1,5 +1,6 @@
 import { Service, ServiceProcedureInput } from '../../domain/entities/service';
 import { IServiceRepository } from '../../application/ports/iservice-repository';
+import { Page, PaginationParams, buildPage } from '../../application/utils/pagination';
 import prisma from './prisma';
 
 function toEntity(s: any): Service {
@@ -45,10 +46,24 @@ export class PrismaServiceRepository implements IServiceRepository {
   async findAll(userId: number): Promise<Service[]> {
     const rows = await prisma.service.findMany({
       where: { userId, deletedAt: null },
-      orderBy: { date: 'desc' },
+      orderBy: [{ date: 'desc' }, { id: 'desc' }],
       ...procedureInclude,
     });
     return rows.map(toEntity);
+  }
+
+  async findPage(userId: number, params: PaginationParams): Promise<Page<Service>> {
+    const rows = await prisma.service.findMany({
+      where: {
+        userId,
+        deletedAt: null,
+        ...(params.cursor ? { id: { lt: params.cursor } } : {}),
+      },
+      orderBy: [{ date: 'desc' }, { id: 'desc' }],
+      take: params.limit + 1,
+      ...procedureInclude,
+    });
+    return buildPage(rows, params.limit, (r) => r.id, toEntity);
   }
 
   async findOne(id: number, userId: number): Promise<Service | null> {

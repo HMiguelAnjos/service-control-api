@@ -2,6 +2,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# sharp precisa de libvips (e o build dele requer compilador nativo no Alpine)
+RUN apk add --no-cache vips-dev build-base python3
+
 COPY package*.json ./
 COPY prisma ./prisma
 RUN npm ci
@@ -16,6 +19,9 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+
+# runtime apenas precisa de libvips
+RUN apk add --no-cache vips
 
 RUN addgroup --system --gid 1001 nodejs \
  && adduser --system --uid 1001 nodeuser

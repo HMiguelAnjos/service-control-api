@@ -56,6 +56,9 @@ export function invalidatePlanCache(planId?: number): void {
 export function requirePlanFeature(feature: PlanFeatureKey) {
   return async (req: Request, _res: Response, next: NextFunction) => {
     try {
+      // Admins bypass plan gating entirely.
+      if (req.user?.role === 'admin') return next();
+
       const features = await getUserPlanFeatures(req.user?.planId ?? null);
       if (!features[feature]) {
         return next(new PlanFeatureRequiredError(feature));

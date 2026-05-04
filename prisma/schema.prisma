@@ -41,6 +41,10 @@ model user {
   products        product[]
   services        service[]
   expenses        expense[]
+  appointments    appointment[]
+  calendarIntegration calendar_integration?
+  availabilityRules   availability_rule[]
+  blockedTimes        blocked_time[]
 
   @@map("user")
 }
@@ -55,9 +59,10 @@ model client {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  user     user          @relation(fields: [userId], references: [id])
-  services service[]
-  photos   client_photo[]
+  user         user          @relation(fields: [userId], references: [id])
+  services     service[]
+  photos       client_photo[]
+  appointments appointment[]
 
   @@index([userId, deletedAt])
   @@map("client")
@@ -98,19 +103,21 @@ model client_photo {
 }
 
 model procedure_type {
-  id          Int       @id @default(autoincrement()) @map("id")
-  userId      Int       @map("user_id")
-  name        String    @map("name")
-  description String?   @map("description")
-  costValue   Decimal?  @map("cost_value") @db.Decimal(10, 2)
-  finalValue  Decimal?  @map("final_value") @db.Decimal(10, 2)
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  deletedAt   DateTime? @map("deleted_at")
+  id                      Int       @id @default(autoincrement()) @map("id")
+  userId                  Int       @map("user_id")
+  name                    String    @map("name")
+  description             String?   @map("description")
+  costValue               Decimal?  @map("cost_value") @db.Decimal(10, 2)
+  finalValue              Decimal?  @map("final_value") @db.Decimal(10, 2)
+  defaultDurationMinutes  Int?      @map("default_duration_minutes")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+  deletedAt               DateTime? @map("deleted_at")
 
   user               user                     @relation(fields: [userId], references: [id])
   service_procedures service_procedure[]
   products           procedure_type_product[]
+  appointments       appointment[]
 
   @@index([userId, deletedAt])
   @@map("procedure_type")
@@ -153,6 +160,7 @@ model service {
   expenses         expense[]
   profit           profit?
   service_products service_product[]
+  appointment      appointment?
 
   @@index([userId, deletedAt])
   @@index([clientId, deletedAt])
@@ -261,4 +269,97 @@ model profit {
   service service @relation(fields: [serviceId], references: [id])
 
   @@map("profit")
+}
+
+/// ── Agenda ──────────────────────────────────────────────────────
+/// Compromisso futuro (criado antes do atendimento acontecer).
+/// Quando concluído, o profissional pode criar o `service` correspondente
+/// e o appointment fica ligado a ele via `serviceId`.
+model appointment {
+  id              Int       @id @default(autoincrement()) @map("id")
+  userId          Int       @map("user_id")
+  clientId        Int       @map("client_id")
+  procedureTypeId Int?      @map("procedure_type_id")
+  serviceId       Int?      @unique @map("service_id")
+
+  startTime       DateTime  @map("start_time")
+  endTime         DateTime  @map("end_time")
+
+  /// scheduled | confirmed | in_progress | completed | canceled | no_show
+  status          String    @default("scheduled") @map("status")
+  notes           String?   @map("notes")
+
+  /// Sync com Google Calendar (preenchidos quando integração ativa)
+  googleEventId    String?   @map("google_event_id")
+  googleCalendarId String?   @map("google_calendar_id")
+  googleSyncedAt   DateTime? @map("google_synced_at")
+
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  canceledAt   DateTime? @map("canceled_at")
+  cancelReason String?   @map("cancel_reason")
+
+  user          user            @relation(fields: [userId], references: [id])
+  client        client          @relation(fields: [clientId], references: [id])
+  procedureType procedure_type? @relation(fields: [procedureTypeId], references: [id])
+  service       service?        @relation(fields: [serviceId], references: [id])
+
+  @@index([userId, startTime])
+  @@index([userId, status, startTime])
+  @@index([clientId, startTime])
+  @@index([googleEventId])
+  @@map("appointment")
+}
+
+/// Conexão OAuth do profissional com um provedor de calendário (Google por enquanto).
+/// Tokens armazenados criptografados (AES-256-GCM com CALENDAR_TOKEN_ENCRYPTION_KEY).
+model calendar_integration {
+  id            Int       @id @default(autoincrement()) @map("id")
+  userId        Int       @unique @map("user_id")
+  provider      String    @default("google") @map("provider")
+  accessToken   String    @map("access_token")
+  refreshToken  String    @map("refresh_token")
+  tokenExpiry   DateTime  @map("token_expiry")
+  scope         String    @map("scope")
+  calendarId    String    @default("primary") @map("calendar_id")
+  syncEnabled   Boolean   @default(true) @map("sync_enabled")
+  syncToken     String?   @map("sync_token")
+  lastSyncedAt  DateTime? @map("last_synced_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  user user @relation(fields: [userId], references: [id])
+
+  @@map("calendar_integration")
+}
+
+/// Horário de funcionamento por dia da semana (0=Dom..6=Sáb).
+/// Minutos a partir da meia-noite (480 = 08:00, 1080 = 18:00).
+model availability_rule {
+  id           Int     @id @default(autoincrement()) @map("id")
+  userId       Int     @map("user_id")
+  dayOfWeek    Int     @map("day_of_week")
+  startMinutes Int     @map("start_minutes")
+  endMinutes   Int     @map("end_minutes")
+  isActive     Boolean @default(true) @map("is_active")
+
+  user user @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("availability_rule")
+}
+
+/// Bloqueios pontuais (almoço extra, feriado, viagem, etc.).
+model blocked_time {
+  id        Int      @id @default(autoincrement()) @map("id")
+  userId    Int      @map("user_id")
+  startTime DateTime @map("start_time")
+  endTime   DateTime @map("end_time")
+  reason    String?  @map("reason")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user user @relation(fields: [userId], references: [id])
+
+  @@index([userId, startTime])
+  @@map("blocked_time")
 }

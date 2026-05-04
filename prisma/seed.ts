@@ -16,6 +16,7 @@ async function main() {
         expenses: false,
         inventory: false,
         reports: false,
+        agenda: false,
       },
     },
     {
@@ -29,6 +30,7 @@ async function main() {
         expenses: true,
         inventory: true,
         reports: false,
+        agenda: false,
       },
     },
     {
@@ -42,6 +44,7 @@ async function main() {
         expenses: true,
         inventory: true,
         reports: true,
+        agenda: true,
       },
     },
     // To add a new plan in the future, add it here and in the PlanName enum:

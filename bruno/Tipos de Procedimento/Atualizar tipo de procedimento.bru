@@ -1,0 +1,22 @@
+meta {
+  name: Atualizar tipo de procedimento
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/procedure-types/1
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Corte e Barba",
+    "description": "Serviço combinado"
+  }
+}

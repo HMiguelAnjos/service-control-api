@@ -1,0 +1,23 @@
+meta {
+  name: Atualizar quantidade usada
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/service-products/1
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "serviceId": 1,
+    "productId": 1,
+    "quantity": 3
+  }
+}

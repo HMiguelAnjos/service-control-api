@@ -1,0 +1,23 @@
+meta {
+  name: Criar produto
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/products
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Shampoo Profissional",
+    "unitCost": 35.00,
+    "description": "500ml"
+  }
+}

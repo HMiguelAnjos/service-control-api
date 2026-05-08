@@ -1,0 +1,22 @@
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Service Control API
+
+  Collection completa da Service Control API.
+
+  ## Setup
+  1. Rode `Auth > Register` (ou `Login` com email/senha existente).
+  2. O script post-response do Login salva automaticamente o `token` na env atual.
+  3. Demais requests herdam o Bearer auth pela coleção.
+
+  ## Variáveis (em `environments/local.bru`)
+  - `baseUrl` — endereço da API (default: http://localhost:3000/api)
+  - `token` — JWT (preenchido automaticamente pelo script de Login)
+}

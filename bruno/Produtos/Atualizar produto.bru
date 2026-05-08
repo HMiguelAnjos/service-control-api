@@ -1,0 +1,23 @@
+meta {
+  name: Atualizar produto
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/products/1
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Shampoo Profissional Premium",
+    "unitCost": 45.00,
+    "description": "1000ml"
+  }
+}

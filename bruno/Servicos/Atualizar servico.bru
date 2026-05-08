@@ -1,0 +1,25 @@
+meta {
+  name: Atualizar serviço
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/services/1
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "clientId": 1,
+    "procedureId": 1,
+    "price": 180.00,
+    "date": "2025-04-12T10:00:00Z",
+    "description": "Corte, barba e hidratação"
+  }
+}

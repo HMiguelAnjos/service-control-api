@@ -1,0 +1,22 @@
+meta {
+  name: Atualizar quantidade em estoque
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{baseUrl}}/inventory/1
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "productId": 1,
+    "quantity": 35
+  }
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Criar lucro (manual)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/profits
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "serviceId": 1,
+    "totalProfit": 124.50,
+    "marginPct": 83.0
+  }
+}
+
+docs {
+  Normalmente o lucro é calculado automaticamente ao criar/atualizar serviços e despesas. Use este endpoint apenas para correções manuais.
+}

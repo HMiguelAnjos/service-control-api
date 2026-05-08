@@ -1,0 +1,25 @@
+meta {
+  name: Criar serviço
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/services
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "clientId": 1,
+    "procedureId": 1,
+    "price": 150.00,
+    "date": "2025-04-12T10:00:00Z",
+    "description": "Corte e barba"
+  }
+}

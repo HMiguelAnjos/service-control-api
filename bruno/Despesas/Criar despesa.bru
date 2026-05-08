@@ -1,0 +1,24 @@
+meta {
+  name: Criar despesa
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/expenses
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "serviceId": 1,
+    "category": "Material",
+    "amount": 25.50,
+    "notes": "Produtos utilizados no serviço"
+  }
+}

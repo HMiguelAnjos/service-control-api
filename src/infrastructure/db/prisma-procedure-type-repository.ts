@@ -9,6 +9,8 @@ function toEntity(p: {
   description: string | null;
   costValue: any;
   finalValue: any;
+  defaultDurationMinutes: number | null;
+  expectedIntervalDays: number | null;
 }): ProcedureType {
   return new ProcedureType(
     p.id,
@@ -17,6 +19,8 @@ function toEntity(p: {
     p.description ?? undefined,
     p.costValue != null ? Number(p.costValue) : undefined,
     p.finalValue != null ? Number(p.finalValue) : undefined,
+    p.defaultDurationMinutes,
+    p.expectedIntervalDays,
   );
 }
 
@@ -29,6 +33,8 @@ export class PrismaProcedureTypeRepository implements IProcedureTypeRepository {
         description: procedureType.description,
         costValue: procedureType.costValue,
         finalValue: procedureType.finalValue,
+        defaultDurationMinutes: procedureType.defaultDurationMinutes ?? undefined,
+        expectedIntervalDays: procedureType.expectedIntervalDays ?? undefined,
       },
     });
   }
@@ -56,6 +62,8 @@ export class PrismaProcedureTypeRepository implements IProcedureTypeRepository {
         description: procedureType.description,
         costValue: procedureType.costValue ?? null,
         finalValue: procedureType.finalValue ?? null,
+        defaultDurationMinutes: procedureType.defaultDurationMinutes ?? null,
+        expectedIntervalDays: procedureType.expectedIntervalDays ?? null,
       },
     });
   }

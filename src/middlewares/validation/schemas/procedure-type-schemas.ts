@@ -14,6 +14,18 @@ const procedureTypeBase = z.object({
     .number({ invalid_type_error: 'Valor final deve ser um número' })
     .min(0, 'Valor final não pode ser negativo')
     .optional(),
+  defaultDurationMinutes: z
+    .number({ invalid_type_error: 'Duração deve ser um número' })
+    .int('Duração deve ser inteira')
+    .positive('Duração deve ser positiva')
+    .nullable()
+    .optional(),
+  expectedIntervalDays: z
+    .number({ invalid_type_error: 'Intervalo esperado deve ser um número' })
+    .int('Intervalo esperado deve ser inteiro')
+    .positive('Intervalo esperado deve ser positivo')
+    .nullable()
+    .optional(),
 });
 
 export const createProcedureTypeSchema = procedureTypeBase;

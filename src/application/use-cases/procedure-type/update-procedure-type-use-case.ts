@@ -12,6 +12,8 @@ export class UpdateProcedureTypeUseCase {
     description?: string;
     costValue?: number;
     finalValue?: number;
+    defaultDurationMinutes?: number | null;
+    expectedIntervalDays?: number | null;
   }) {
     const entity = new ProcedureType(
       input.id,
@@ -20,6 +22,8 @@ export class UpdateProcedureTypeUseCase {
       input.description,
       input.costValue,
       input.finalValue,
+      input.defaultDurationMinutes,
+      input.expectedIntervalDays,
     );
     if (!entity.isValid()) {
       throw new BadRequest(400, 'Dados do tipo de procedimento inválidos');

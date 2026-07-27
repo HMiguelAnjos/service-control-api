@@ -6,6 +6,8 @@ export class ProcedureType {
     public readonly description?: string,
     public readonly costValue?: number,
     public readonly finalValue?: number,
+    public readonly defaultDurationMinutes?: number | null,
+    public readonly expectedIntervalDays?: number | null,
   ) {}
 
   isValid(): boolean {

@@ -11,6 +11,8 @@ export class CreateProcedureTypeUseCase {
     description?: string;
     costValue?: number;
     finalValue?: number;
+    defaultDurationMinutes?: number | null;
+    expectedIntervalDays?: number | null;
   }) {
     const entity = new ProcedureType(
       undefined,
@@ -19,6 +21,8 @@ export class CreateProcedureTypeUseCase {
       input.description,
       input.costValue,
       input.finalValue,
+      input.defaultDurationMinutes,
+      input.expectedIntervalDays,
     );
     if (!entity.isValid()) {
       throw new BadRequest(400, 'Dados do tipo de procedimento inválidos');

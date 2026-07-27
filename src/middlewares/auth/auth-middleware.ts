@@ -34,7 +34,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     // Always verify isActive from DB so disabling takes effect immediately
     const dbUser = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { isActive: true, role: true, planId: true },
+      select: { isActive: true, role: true, planId: true, businessId: true },
     });
 
     if (!dbUser || !dbUser.isActive) {
@@ -47,11 +47,15 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
       email: decoded.email,
       role: dbUser.role,
       planId: dbUser.planId,
+      businessId: dbUser.businessId,
       isActive: dbUser.isActive,
     };
     next();
   } catch (err) {
-    log.warn('Auth', `Token inválido ou expirado → ${req.method} ${req.path} (${(err as Error).message})`);
+    log.warn(
+      'Auth',
+      `Token inválido ou expirado → ${req.method} ${req.path} (${(err as Error).message})`,
+    );
     return res.status(401).json({ error: 'Token inválido ou expirado' });
   }
 }

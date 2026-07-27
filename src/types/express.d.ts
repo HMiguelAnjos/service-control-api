@@ -6,6 +6,7 @@ declare global {
         email: string;
         role: string;
         planId: number | null;
+        businessId: number | null;
         isActive: boolean;
       };
     }

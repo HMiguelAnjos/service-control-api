@@ -22,8 +22,38 @@ model plan {
   @@map("plan")
 }
 
+/// Estabelecimento (tenant). Todo dado de negócio pertence a um business;
+/// nada cruza entre businesses.  Um business pode ter vários `user` (logins)
+/// e vários `professional` (executores de atendimento — com ou sem login).
+model business {
+  id                     Int       @id @default(autoincrement()) @map("id")
+  name                   String    @map("name")
+  displayName            String?   @map("display_name")
+  /// Q3 fallback: estimativa manual do dono no onboarding.  Usada como
+  /// divisor do rateio de custo fixo enquanto não houver 3 meses de dados.
+  monthlyServiceEstimate Int?      @map("monthly_service_estimate")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+  deletedAt              DateTime? @map("deleted_at")
+
+  users             user[]
+  clients           client[]
+  products          product[]
+  procedureTypes    procedure_type[]
+  services          service[]
+  expenses          expense[]
+  appointments      appointment[]
+  professionals     professional[]
+  paymentMethods    payment_method[]
+  fixedCosts        fixed_cost[]
+  stockPurchases    stock_purchase[]
+
+  @@map("business")
+}
+
 model user {
   id                Int       @id @default(autoincrement()) @map("id")
+  businessId        Int?      @map("business_id")
   name              String    @map("name")
   email             String    @unique @map("email")
   passwordHash      String    @map("password_hash")
@@ -35,36 +65,67 @@ model user {
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
-  plan            plan?    @relation(fields: [planId], references: [id])
-  clients         client[]
-  procedure_types procedure_type[]
-  products        product[]
-  services        service[]
-  expenses        expense[]
-  appointments    appointment[]
+  business            business?             @relation(fields: [businessId], references: [id])
+  plan                plan?                 @relation(fields: [planId], references: [id])
+  professional        professional?
+  clients             client[]
+  procedure_types     procedure_type[]
+  products            product[]
+  services            service[]
+  expenses            expense[]
+  appointments        appointment[]
   calendarIntegration calendar_integration?
   availabilityRules   availability_rule[]
   blockedTimes        blocked_time[]
 
+  @@index([businessId])
   @@map("user")
 }
 
-model client {
-  id        Int       @id @default(autoincrement()) @map("id")
-  userId    Int       @map("user_id")
-  name      String    @map("name")
-  phone     String?   @map("phone")
-  email     String?   @map("email")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+/// Profissional (executor de atendimento).  Pode ter um `user` ligado (loga
+/// e opera o sistema) ou não (só é registrado como quem fez o serviço,
+/// ex.: funcionária tosadora que nem mexe no sistema).
+model professional {
+  id           Int       @id @default(autoincrement()) @map("id")
+  businessId   Int       @map("business_id")
+  userId       Int?      @unique @map("user_id")
+  name         String    @map("name")
+  /// Custo por hora do profissional — usado no snapshot de mão de obra.
+  hourlyCost   Decimal?  @map("hourly_cost") @db.Decimal(10, 2)
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
+  business        business          @relation(fields: [businessId], references: [id])
+  user            user?             @relation(fields: [userId], references: [id])
+  services        service[]
+  appointments    appointment[]
+  commissionRules commission_rule[]
+
+  @@index([businessId, deletedAt])
+  @@map("professional")
+}
+
+model client {
+  id         Int       @id @default(autoincrement()) @map("id")
+  businessId Int?      @map("business_id")
+  userId     Int       @map("user_id")
+  name       String    @map("name")
+  phone      String?   @map("phone")
+  email      String?   @map("email")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+
+  business     business?     @relation(fields: [businessId], references: [id])
   user         user          @relation(fields: [userId], references: [id])
   services     service[]
   photos       client_photo[]
   appointments appointment[]
 
   @@index([userId, deletedAt])
+  @@index([businessId, deletedAt])
   @@map("client")
 }
 
@@ -73,20 +134,16 @@ model client_photo {
   userId    Int       @map("user_id")
   clientId  Int       @map("client_id")
 
-  // Object storage (R2/S3 or local)
   bucketKey String?   @map("bucket_key")
   thumbKey  String?   @map("thumb_key")
 
-  // Legacy disk uploads — kept so old records keep displaying
   filename  String?   @map("filename")
 
-  // Metadata
   mimeType  String?   @map("mime_type")
   sizeBytes Int?      @map("size_bytes")
   width     Int?      @map("width")
   height    Int?      @map("height")
 
-  // Domain
   tag       String?   @map("tag")
   notes     String?   @map("notes")
   takenAt   DateTime  @map("taken_at")
@@ -104,26 +161,33 @@ model client_photo {
 
 model procedure_type {
   id                      Int       @id @default(autoincrement()) @map("id")
+  businessId              Int?      @map("business_id")
   userId                  Int       @map("user_id")
   name                    String    @map("name")
   description             String?   @map("description")
   costValue               Decimal?  @map("cost_value") @db.Decimal(10, 2)
   finalValue              Decimal?  @map("final_value") @db.Decimal(10, 2)
   defaultDurationMinutes  Int?      @map("default_duration_minutes")
+  /// Intervalo típico entre atendimentos deste tipo (dias).  Usado pela
+  /// lista de "clientes sumidos": se o último atendimento do cliente
+  /// desse tipo passou desse limite, ele entra na lista.
+  expectedIntervalDays    Int?      @map("expected_interval_days")
   createdAt               DateTime  @default(now()) @map("created_at")
   updatedAt               DateTime  @updatedAt @map("updated_at")
   deletedAt               DateTime? @map("deleted_at")
 
+  business           business?                @relation(fields: [businessId], references: [id])
   user               user                     @relation(fields: [userId], references: [id])
   service_procedures service_procedure[]
   products           procedure_type_product[]
   appointments       appointment[]
 
   @@index([userId, deletedAt])
+  @@index([businessId, deletedAt])
   @@map("procedure_type")
 }
 
-/// Produtos usados em um tipo de procedimento (com quantidade)
+/// Ficha técnica: quais insumos e em que quantidade cada execução consome.
 model procedure_type_product {
   id              Int     @id @default(autoincrement()) @map("id")
   procedureTypeId Int     @map("procedure_type_id")
@@ -142,33 +206,62 @@ model procedure_type_product {
   @@map("procedure_type_product")
 }
 
-/// Um atendimento agora pode ter múltiplos procedimentos
+/// Atendimento.  Tem dois estados relevantes:
+///   - draft:     criado a partir da ficha técnica, aguardando confirmação
+///                do consumo real de insumos (usuário pode ajustar).
+///   - confirmed: snapshot congelado (custos, margem, comissão) — imutável.
+///                Fase 3 vai popular todos os campos "*_frozen".
 model service {
-  id          Int       @id @default(autoincrement()) @map("id")
-  userId      Int       @map("user_id")
-  clientId    Int       @map("client_id")
-  description String?   @map("description")
-  totalPrice  Decimal   @map("total_price")
-  date        DateTime  @default(now()) @map("date")
+  id             Int       @id @default(autoincrement()) @map("id")
+  businessId     Int?      @map("business_id")
+  userId         Int       @map("user_id")
+  clientId       Int       @map("client_id")
+  professionalId Int?      @map("professional_id")
+  description    String?   @map("description")
+  totalPrice     Decimal   @map("total_price")
+  date           DateTime  @default(now()) @map("date")
+  /// Duração real do atendimento (minutos).  Usada no cálculo de mão de obra.
+  durationMinutes Int?     @map("duration_minutes")
+  /// draft | confirmed.  Legado é considerado 'confirmed'.
+  status         String    @default("confirmed") @map("status")
+
+  /// ── Snapshots (Regra 4 — congelados no confirm; nunca mudam) ─────
+  insumoCostFrozen    Decimal? @map("insumo_cost_frozen") @db.Decimal(10, 2)
+  laborCostFrozen     Decimal? @map("labor_cost_frozen") @db.Decimal(10, 2)
+  fixedCostFrozen     Decimal? @map("fixed_cost_frozen") @db.Decimal(10, 2)
+  paymentFeeFrozen    Decimal? @map("payment_fee_frozen") @db.Decimal(10, 2)
+  commissionFrozen    Decimal? @map("commission_frozen") @db.Decimal(10, 2)
+  netProfitFrozen     Decimal? @map("net_profit_frozen") @db.Decimal(10, 2)
+  marginPctFrozen     Decimal? @map("margin_pct_frozen") @db.Decimal(6, 3)
+  /// Divisor usado no rateio de custo fixo (nº atendimentos considerado).
+  /// Guardado pra auditoria e explicação no dashboard.
+  fixedCostDivisor    Int?     @map("fixed_cost_divisor")
+
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
-  user             user                @relation(fields: [userId], references: [id])
-  client           client              @relation(fields: [clientId], references: [id])
+  business         business?         @relation(fields: [businessId], references: [id])
+  user             user              @relation(fields: [userId], references: [id])
+  client           client            @relation(fields: [clientId], references: [id])
+  professional     professional?     @relation(fields: [professionalId], references: [id])
   procedures       service_procedure[]
   expenses         expense[]
   profit           profit?
   service_products service_product[]
+  servicePayments  service_payment[]
   appointment      appointment?
 
   @@index([userId, deletedAt])
+  @@index([businessId, deletedAt])
   @@index([clientId, deletedAt])
   @@index([userId, date])
+  @@index([businessId, date])
+  @@index([professionalId, date])
+  @@index([businessId, status, date])
   @@map("service")
 }
 
-/// Junção: quais procedimentos foram realizados no atendimento e por qual preço
 model service_procedure {
   id              Int     @id @default(autoincrement()) @map("id")
   serviceId       Int     @map("service_id")
@@ -186,22 +279,24 @@ model service_procedure {
   @@map("service_procedure")
 }
 
-/// Despesas gerais (aluguel, transporte…) OU vinculadas a um atendimento
 model expense {
-  id        Int       @id @default(autoincrement()) @map("id")
-  userId    Int       @map("user_id")
-  serviceId Int?      @map("service_id")
-  category  String    @map("category")
-  amount    Decimal   @map("amount")
-  notes     String?   @map("notes")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id         Int       @id @default(autoincrement()) @map("id")
+  businessId Int?      @map("business_id")
+  userId     Int       @map("user_id")
+  serviceId  Int?      @map("service_id")
+  category   String    @map("category")
+  amount     Decimal   @map("amount")
+  notes      String?   @map("notes")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
 
-  user    user     @relation(fields: [userId], references: [id])
-  service service? @relation(fields: [serviceId], references: [id])
+  business business? @relation(fields: [businessId], references: [id])
+  user     user      @relation(fields: [userId], references: [id])
+  service  service?  @relation(fields: [serviceId], references: [id])
 
   @@index([userId, deletedAt])
+  @@index([businessId, deletedAt])
   @@index([serviceId, deletedAt])
   @@index([userId, createdAt])
   @@map("expense")
@@ -209,20 +304,27 @@ model expense {
 
 model product {
   id          Int       @id @default(autoincrement()) @map("id")
+  businessId  Int?      @map("business_id")
   userId      Int       @map("user_id")
   name        String    @map("name")
   description String?   @map("description")
+  /// Custo médio ponderado atual — recalculado automaticamente a cada
+  /// stock_purchase novo pela fórmula:
+  /// novo = (estoque * custo_atual + qtd * custo_compra) / (estoque + qtd)
   unitCost    Decimal   @map("unit_cost")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
   deletedAt   DateTime? @map("deleted_at")
 
+  business          business?                @relation(fields: [businessId], references: [id])
   user              user                     @relation(fields: [userId], references: [id])
   inventory         inventory?
   usedIn            service_product[]
   procedure_types   procedure_type_product[]
+  stockPurchases    stock_purchase[]
 
   @@index([userId, deletedAt])
+  @@index([businessId, deletedAt])
   @@map("product")
 }
 
@@ -240,11 +342,44 @@ model inventory {
   @@map("inventory")
 }
 
+/// Histórico de todas as compras de insumo — fonte de verdade do custo médio.
+/// Cada compra dispara o recálculo de `product.unitCost` e atualiza o `inventory`.
+model stock_purchase {
+  id          Int      @id @default(autoincrement()) @map("id")
+  businessId  Int      @map("business_id")
+  productId   Int      @map("product_id")
+  /// Quantidade comprada (na mesma unidade de `inventory.quantity`).
+  quantity    Decimal  @map("quantity") @db.Decimal(10, 3)
+  /// Custo unitário DA COMPRA (não confundir com o custo médio do product).
+  unitCost    Decimal  @map("unit_cost") @db.Decimal(10, 2)
+  /// Custo total da compra = quantity × unitCost.  Guardado pra evitar recalcular.
+  totalCost   Decimal  @map("total_cost") @db.Decimal(10, 2)
+  supplier    String?  @map("supplier")
+  notes       String?  @map("notes")
+  purchasedAt DateTime @default(now()) @map("purchased_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  business business @relation(fields: [businessId], references: [id])
+  product  product  @relation(fields: [productId], references: [id])
+
+  @@index([businessId, purchasedAt])
+  @@index([productId, purchasedAt])
+  @@map("stock_purchase")
+}
+
 model service_product {
-  id        Int       @id @default(autoincrement()) @map("id")
-  serviceId Int       @map("service_id")
-  productId Int       @map("product_id")
-  quantity  Decimal   @map("quantity") @db.Decimal(10, 3)
+  id                Int       @id @default(autoincrement()) @map("id")
+  serviceId         Int       @map("service_id")
+  productId         Int       @map("product_id")
+  /// Quantidade real consumida no atendimento (o que o usuário confirmou).
+  quantity          Decimal   @map("quantity") @db.Decimal(10, 3)
+  /// Quantidade sugerida pela ficha técnica no momento do draft.
+  /// Guardada só pra auditar "quanto o usuário divergiu do sugerido".
+  suggestedQuantity Decimal?  @map("suggested_quantity") @db.Decimal(10, 3)
+  /// Snapshot do custo unitário do produto no momento do confirm.
+  /// Nunca muda depois — regra 4.
+  unitCostFrozen    Decimal?  @map("unit_cost_frozen") @db.Decimal(10, 2)
+
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -271,25 +406,114 @@ model profit {
   @@map("profit")
 }
 
+/// Forma de pagamento (bandeira/modalidade) com taxa % e prazo de recebimento.
+/// Ex: "Cielo Débito" fee=1.99%, receiptDays=1.  "Cielo Crédito à vista" fee=3.20%, receiptDays=30.
+model payment_method {
+  id          Int       @id @default(autoincrement()) @map("id")
+  businessId  Int       @map("business_id")
+  name        String    @map("name")
+  feePercent  Decimal   @map("fee_percent") @db.Decimal(6, 3)
+  receiptDays Int       @map("receipt_days")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  business        business          @relation(fields: [businessId], references: [id])
+  servicePayments service_payment[]
+
+  @@index([businessId, deletedAt])
+  @@map("payment_method")
+}
+
+/// Pagamento de um atendimento — pode haver mais de um por serviço (split).
+/// Cada linha gera uma expectativa de recebimento com data prevista.
+model service_payment {
+  id                Int       @id @default(autoincrement()) @map("id")
+  serviceId         Int       @map("service_id")
+  paymentMethodId   Int       @map("payment_method_id")
+  /// Valor bruto pago com esse método.
+  amount            Decimal   @map("amount") @db.Decimal(10, 2)
+  /// Snapshot da taxa no momento do pagamento — a taxa do método pode mudar depois.
+  feePercent        Decimal   @map("fee_percent") @db.Decimal(6, 3)
+  feeAmount         Decimal   @map("fee_amount") @db.Decimal(10, 2)
+  netAmount         Decimal   @map("net_amount") @db.Decimal(10, 2)
+  expectedReceiptAt DateTime  @map("expected_receipt_at")
+  /// Preenchido quando o dinheiro cai na conta.  Se `actualAmount` diverge
+  /// do `netAmount`, o dashboard sinaliza a divergência (regra 6).
+  actualReceiptAt   DateTime? @map("actual_receipt_at")
+  actualAmount      Decimal?  @map("actual_amount") @db.Decimal(10, 2)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  service       service        @relation(fields: [serviceId], references: [id])
+  paymentMethod payment_method @relation(fields: [paymentMethodId], references: [id])
+
+  @@index([serviceId])
+  @@index([expectedReceiptAt])
+  @@index([actualReceiptAt])
+  @@map("service_payment")
+}
+
+/// Custo fixo mensal (aluguel, luz, financiamento, ...).  Usado no rateio
+/// do snapshot e no cálculo de ponto de equilíbrio.
+///
+/// Modelo de histórico: quando um custo muda de valor, criar uma nova linha
+/// com `startDate` da nova vigência e setar `endDate` na linha antiga.
+/// Assim relatórios de meses passados continuam corretos.
+model fixed_cost {
+  id            Int       @id @default(autoincrement()) @map("id")
+  businessId    Int       @map("business_id")
+  name          String    @map("name")
+  monthlyAmount Decimal   @map("monthly_amount") @db.Decimal(10, 2)
+  startDate     DateTime  @default(now()) @map("start_date")
+  endDate       DateTime? @map("end_date")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  business business @relation(fields: [businessId], references: [id])
+
+  @@index([businessId, isActive])
+  @@index([businessId, startDate, endDate])
+  @@map("fixed_cost")
+}
+
+/// Regra de comissão do profissional — aplicada sobre o LUCRO líquido do
+/// atendimento (não sobre valor bruto vendido).  Regra 10.
+/// Modelo com startDate/endDate pra permitir mudanças históricas sem
+/// alterar comissões já pagas.
+model commission_rule {
+  id             Int       @id @default(autoincrement()) @map("id")
+  professionalId Int       @map("professional_id")
+  percent        Decimal   @map("percent") @db.Decimal(6, 3)
+  startDate      DateTime  @default(now()) @map("start_date")
+  endDate        DateTime? @map("end_date")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  professional professional @relation(fields: [professionalId], references: [id])
+
+  @@index([professionalId, startDate])
+  @@map("commission_rule")
+}
+
 /// ── Agenda ──────────────────────────────────────────────────────
-/// Compromisso futuro (criado antes do atendimento acontecer).
-/// Quando concluído, o profissional pode criar o `service` correspondente
-/// e o appointment fica ligado a ele via `serviceId`.
 model appointment {
   id              Int       @id @default(autoincrement()) @map("id")
+  businessId      Int?      @map("business_id")
   userId          Int       @map("user_id")
   clientId        Int       @map("client_id")
   procedureTypeId Int?      @map("procedure_type_id")
+  professionalId  Int?      @map("professional_id")
   serviceId       Int?      @unique @map("service_id")
 
   startTime       DateTime  @map("start_time")
   endTime         DateTime  @map("end_time")
 
-  /// scheduled | confirmed | in_progress | completed | canceled | no_show
   status          String    @default("scheduled") @map("status")
   notes           String?   @map("notes")
 
-  /// Sync com Google Calendar (preenchidos quando integração ativa)
   googleEventId    String?   @map("google_event_id")
   googleCalendarId String?   @map("google_calendar_id")
   googleSyncedAt   DateTime? @map("google_synced_at")
@@ -299,20 +523,22 @@ model appointment {
   canceledAt   DateTime? @map("canceled_at")
   cancelReason String?   @map("cancel_reason")
 
+  business      business?       @relation(fields: [businessId], references: [id])
   user          user            @relation(fields: [userId], references: [id])
   client        client          @relation(fields: [clientId], references: [id])
   procedureType procedure_type? @relation(fields: [procedureTypeId], references: [id])
+  professional  professional?   @relation(fields: [professionalId], references: [id])
   service       service?        @relation(fields: [serviceId], references: [id])
 
   @@index([userId, startTime])
+  @@index([businessId, startTime])
   @@index([userId, status, startTime])
   @@index([clientId, startTime])
+  @@index([professionalId, startTime])
   @@index([googleEventId])
   @@map("appointment")
 }
 
-/// Conexão OAuth do profissional com um provedor de calendário (Google por enquanto).
-/// Tokens armazenados criptografados (AES-256-GCM com CALENDAR_TOKEN_ENCRYPTION_KEY).
 model calendar_integration {
   id            Int       @id @default(autoincrement()) @map("id")
   userId        Int       @unique @map("user_id")
@@ -333,8 +559,6 @@ model calendar_integration {
   @@map("calendar_integration")
 }
 
-/// Horário de funcionamento por dia da semana (0=Dom..6=Sáb).
-/// Minutos a partir da meia-noite (480 = 08:00, 1080 = 18:00).
 model availability_rule {
   id           Int     @id @default(autoincrement()) @map("id")
   userId       Int     @map("user_id")
@@ -349,7 +573,6 @@ model availability_rule {
   @@map("availability_rule")
 }
 
-/// Bloqueios pontuais (almoço extra, feriado, viagem, etc.).
 model blocked_time {
   id        Int      @id @default(autoincrement()) @map("id")
   userId    Int      @map("user_id")

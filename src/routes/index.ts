@@ -13,7 +13,9 @@ import procedureTypeRoutes from './procedure-type-routes';
 import procedureTypeProductRoutes from './procedure-type-product-routes';
 import productRoutes from './product-routes';
 import profitRoutes from './profit-routes';
+import paymentMethodRoutes from './payment-method-routes';
 import serviceRoutes from './service-routes';
+import servicePaymentRoutes from './service-payment-routes';
 import stockPurchaseRoutes from './stock-purchase-routes';
 
 const router = Router();
@@ -32,6 +34,8 @@ router.use('/inventory', inventoryRoutes);
 router.use('/procedure-types', procedureTypeRoutes);
 router.use('/procedure-types/:procedureTypeId/products', procedureTypeProductRoutes);
 router.use('/profits', profitRoutes);
+router.use('/payment-methods', paymentMethodRoutes);
+router.use('/service-payments', servicePaymentRoutes);
 router.use('/services', serviceRoutes);
 router.use('/stock-purchases', stockPurchaseRoutes);
 
